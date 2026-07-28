@@ -1,0 +1,120 @@
+# =============================================
+# LARAVEL Y PHP
+# =============================================
+
+# Archivos de entorno y configuración
+.env
+.env.backup
+.env.production
+.env.local
+.env.testing
+.env.staging
+
+# Dependencias
+/vendor/
+/node_modules/
+
+# Cache y logs
+*.log
+storage/*.key
+storage/logs/*.log
+storage/framework/cache/data/*
+storage/framework/sessions/*
+storage/framework/views/*
+!storage/framework/.gitignore
+bootstrap/cache/*
+!bootstrap/cache/.gitkeep
+
+# Archivos de build y assets compilados
+/public/build/
+/public/hot
+/public/storage
+/public/vendor/
+public/css/app.css
+public/js/app.js
+public/mix-manifest.json
+public/vite-manifest.json
+
+# =============================================
+# PRUEBAS Y CALIDAD DE CÓDIGO
+# =============================================
+
+.phpunit.result.cache
+.phpbench-cache
+tests/coverage
+phpunit.xml.bak
+phpunit.xml
+
+# =============================================
+# IDE Y EDITORES DE TEXTO
+# =============================================
+
+# PHPStorm / IntelliJ
+/.idea/
+*.iml
+*.ipr
+*.iws
+
+# VS Code
+/.vscode/
+*.code-workspace
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Fleet
+/.fleet/
+
+# Nova
+/.nova/
+
+# Zed
+/.zed/
+
+# Otros editores
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# =============================================
+# ARCHIVOS DE SISTEMA Y REPOSITORIO
+# =============================================
+
+# Archivos de composer
+composer.phar
+composer.lock 
+.auth.json
+
+# Archivos de npm/yarn
+npm-debug.log
+yarn-error.log
+yarn.lock  # Opcional, dependiendo del proyecto
+
+# =============================================
+# REPORTES Y ARCHIVOS GENERADOS
+# =============================================
+
+# Reportes de RRHH
+*.xlsx
+*.xls
+*.csv
+reports/*.pdf
+reports/*.xlsx
+
+# Backups de base de datos
+*.sql
+*.sql.gz
+backups/
+
+# =============================================
+# ARCHIVOS DE HOMESTEAD
+# =============================================
+
+Homestead.json
+Homestead.yaml
+Homestead.yaml.bak
+.homestead/

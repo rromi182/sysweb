@@ -1,0 +1,33 @@
+<?php
+
+namespace App\Providers;
+
+use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Schema;
+//use Illuminate\Support\Number;
+
+class AppServiceProvider extends ServiceProvider
+{
+    /**
+     * Register any application services.
+     */
+    public function register(): void
+    {
+        //
+    }
+
+    /**
+     * Bootstrap any application services.
+     */
+    public function boot(): void
+    {
+        Blade::directive('money', function ($expression) {
+            return "<?php echo format_money($expression); ?>";
+        });
+
+        Schema::defaultStringLength(191);
+        // Cambia 'EUR' por el código de tu moneda, ej: 'MXN', 'COP', 'GBP'
+       // Number::useCurrency('PYG');
+    }
+}
