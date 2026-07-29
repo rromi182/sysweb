@@ -48,7 +48,7 @@
 
                 <div class="flex items-center justify-end mt-4">
                     <x-primary-button
-                        class="w-full bg-black hover:bg-[#05c48b] hover:text-white transition-colors duration-200"
+                        class="w-full hover:bg-[#05c48b]! hover:text-white bg-black transition-colors duration-200"
                         ::disabled="loading">
                         <svg x-show="loading" style="display: none;" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
                             xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

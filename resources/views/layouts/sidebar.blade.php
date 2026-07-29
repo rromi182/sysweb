@@ -1,3 +1,4 @@
+@persist('sidebar')
 <aside
     x-data="{ open: $persist(true).as('sb') }"
     @open-sidebar.window="open = true"
@@ -10,7 +11,7 @@
 >
     {{-- Logo --}}
     <div class="flex items-center h-12 px-4 border-b border-border shrink-0">
-        <a href="{{ route('dashboard') }}" class="flex items-center gap-2 min-w-0">
+        <a href="{{ route('dashboard') }}" wire:navigate class="flex items-center gap-2 min-w-0">
             <x-application-logo class="w-5 h-5 fill-current text-foreground shrink-0" />
             <span class="font-semibold text-sm text-foreground truncate">{{ config('app.name') }}</span>
         </a>
@@ -20,7 +21,7 @@
     <nav class="flex-1 overflow-y-auto overflow-x-hidden py-2 px-2 space-y-0.5 w-60">
 
         {{-- Dashboard --}}
-        <a href="{{ route('dashboard') }}"
+        <a href="{{ route('dashboard') }}" wire:navigate
            class="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors
                   {{ request()->routeIs('dashboard') ? 'bg-accent/50 text-accent-foreground font-medium' : 'text-muted-foreground hover:bg-muted hover:text-foreground' }}">
             <x-heroicon-o-squares-2x2 class="w-4 h-4 shrink-0" />
@@ -71,7 +72,7 @@
         </x-sb-dropdown>
 
         {{-- Usuarios --}}
-        <a href="{{ route('users.index') }}"
+        <a href="{{ route('users.index') }}" wire:navigate
            class="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors
                   {{ request()->routeIs('users.*') ? 'bg-accent/50 text-accent-foreground font-medium' : 'text-muted-foreground hover:bg-muted hover:text-foreground' }}">
             <x-heroicon-o-users class="w-4 h-4 shrink-0" />
@@ -80,3 +81,4 @@
 
     </nav>
 </aside>
+@endpersist

@@ -17,6 +17,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('profile', 'profile.index')->name('profile.index');
 
     // =========================================================================
+    // Dashboard RRHH
+    // =========================================================================
+    //Route::get('/dashboard/rrhh', \App\Livewire\Dashboard\HrDashboard::class)
+        //->name('dashboard.hr');
+
+
+
+    // =========================================================================
     // Master Data
     // =========================================================================
     Route::prefix('master')->group(function () {
@@ -79,4 +87,4 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

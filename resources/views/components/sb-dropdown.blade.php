@@ -3,6 +3,7 @@
 <div x-data="{ open: {{ $active ? 'true' : 'false' }} }">
     <button
         @click="open = !open"
+        wire:current.exact="text-foreground font-medium"
         class="flex items-center w-full gap-2.5 rounded-md px-3 py-2 text-sm transition-colors
                {{ $active ? 'text-foreground font-medium' : 'text-muted-foreground hover:bg-muted hover:text-foreground' }}"
     >

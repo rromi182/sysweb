@@ -4,7 +4,7 @@
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-card p-4 rounded-lg border border-border shadow-sm">
         <div>
             <h2 class="text-lg font-semibold text-foreground">Overview</h2>
-            <p class="text-sm text-muted-foreground">Monitor your business performance at a glance.</p>
+            <p class="text-sm text-muted-foreground">Bienvenido al Sistema: {{ Auth::user()->name }}</p>
         </div>
         <div class="flex flex-wrap items-center gap-2">
             <!-- Period Selector -->
