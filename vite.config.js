@@ -8,7 +8,7 @@ export default defineConfig({
             refresh: true,
         }),
     ],
-    server: {
+    /*server: {
         host: '0.0.0.0', // Permite acceso desde cualquier dispositivo
         port: 5173,
         strictPort: true,
@@ -17,5 +17,5 @@ export default defineConfig({
             port: 5173,
             protocol: 'ws',
         },
-    },
+    },*/
 });

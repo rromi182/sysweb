@@ -78,6 +78,13 @@
             <x-heroicon-o-users class="w-4 h-4 shrink-0" />
             <span>Usuarios</span>
         </a>
+        {{-- Empresas --}}
+        <a href="#" wire:navigate
+           class="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors
+                 'bg-accent/50 text-accent-foreground font-medium' : 'text-muted-foreground hover:bg-muted hover:text-foreground' }}">
+            <x-heroicon-o-users class="w-4 h-4 shrink-0" />
+            <span>Empresas</span>
+        </a>
 
     </nav>
 </aside>
