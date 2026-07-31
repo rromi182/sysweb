@@ -14,6 +14,7 @@ export default {
         "./vendor/power-components/livewire-powergrid/resources/views/**/*.php",
         "./vendor/power-components/livewire-powergrid/src/Themes/Tailwind.php",
         "./app/Enums/**/*.php",
+        './app/PowerGridThemes/SyswebTheme.php',
     ],
 
     theme: {

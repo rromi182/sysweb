@@ -1,10 +1,10 @@
 <?php
-
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SalesController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FinanceReportController;
+use App\Http\Controllers\EmpresaController;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // =========================================================================
@@ -33,6 +33,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::view('categories', 'categories.index')->name('categories.index');
         Route::view('units', 'units.index')->name('units.index');
         Route::view('products', 'products.index')->name('products.index');
+        Route::view('empresas', 'empresas.index')->name('empresas.index');
     });
 
     // =========================================================================
@@ -85,6 +86,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('users', [\App\Http\Controllers\Api\UserController::class, 'search'])->name('users.search');
         Route::post('finance-categories', [\App\Http\Controllers\Api\FinanceCategoryController::class, 'search'])->name('finance-categories.search');
     });
-});
+
+    // Empresas APIs (para autocomplete, etc.)
+        Route::post('empresas', [\App\Http\Controllers\Api\EmpresaController::class, 'search'])->name('empresas.search');
+    });
 
 require __DIR__ . '/auth.php';

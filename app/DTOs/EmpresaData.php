@@ -1,26 +1,38 @@
 <?php
+// app/DTOs/EmpresaData.php
 
 namespace App\DTOs;
+
+use Illuminate\Support\Facades\Auth;
 
 class EmpresaData
 {
     public function __construct(
-        public readonly ?string $nombre,
-        public readonly ?string $razon_social,
-        public readonly ?string $ruc,
-        public readonly ?string $direccion,
-        public readonly ?string $telefono,
-        public readonly ?string $correo,
-        public readonly ?string $logo,
-        public readonly ?string $sitio_web,
-        public readonly ?int $estado = 1,
-        public readonly ?int $creado_por = null,
-    ) {}
+        public string $nombre,
+        public ?string $razon_social = null,
+        public ?string $ruc = null,
+        public ?string $direccion = null,
+        public ?string $telefono = null,
+        public ?string $correo = null,
+        public mixed $logo = null,
+        public ?string $sitio_web = null,
+        public int $estado = 1,
+        public ?int $creado_por = null,
+        public ?int $actualizado_por = null,
+    ) {
+        // Asignar usuario autenticado si no se proporciona
+        if ($this->creado_por === null) {
+            $this->creado_por = Auth::id();
+        }
+        if ($this->actualizado_por === null) {
+            $this->actualizado_por = Auth::id();
+        }
+    }
 
     public static function fromArray(array $data): self
     {
         return new self(
-            nombre: $data['nombre'] ?? null,
+            nombre: $data['nombre'] ?? '',
             razon_social: $data['razon_social'] ?? null,
             ruc: $data['ruc'] ?? null,
             direccion: $data['direccion'] ?? null,
@@ -29,7 +41,8 @@ class EmpresaData
             logo: $data['logo'] ?? null,
             sitio_web: $data['sitio_web'] ?? null,
             estado: $data['estado'] ?? 1,
-            creado_por: $data['creado_por'],// ?? auth()->id(), //ver como traer el id de inicio sesion del usario
+            creado_por: $data['creado_por'] ?? null,
+            actualizado_por: $data['actualizado_por'] ?? null,
         );
     }
 
@@ -46,6 +59,7 @@ class EmpresaData
             'sitio_web' => $this->sitio_web,
             'estado' => $this->estado,
             'creado_por' => $this->creado_por,
-        ], fn($value) => $value !== null);
+            'actualizado_por' => $this->actualizado_por,
+        ], fn($value) => $value !== null && $value !== '');
     }
 }

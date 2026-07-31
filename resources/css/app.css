@@ -135,3 +135,50 @@
     max-height: 300px !important;
     @apply p-1; /* Add internal padding for options container */
 }
+
+
+/* ============================
+   PowerGrid — Tema Minimalista
+   ============================*/
+
+/* Header de tabla */
+.powergrid table thead tr {
+    @apply bg-transparent border-b border-border;
+}
+
+.powergrid table thead th {
+    @apply text-xs font-medium text-muted-foreground uppercase tracking-wide py-3 px-4 bg-transparent;
+}
+
+/* Filas */
+.powergrid table tbody tr {
+    @apply border-b border-border hover:bg-muted/40 transition-colors;
+}
+
+.powergrid table tbody td {
+    @apply py-3 px-4 text-sm text-foreground;
+}
+
+/* Quitar el fondo oscuro del header completo */
+.powergrid .pg-header,
+.powergrid [class*="bg-gray-700"],
+.powergrid [class*="bg-slate-700"],
+.powergrid [class*="bg-gray-800"] {
+    @apply bg-background text-foreground;
+}
+
+/* Footer / paginación */
+.powergrid .pg-footer {
+    @apply bg-transparent border-t border-border text-sm text-muted-foreground;
+}
+
+/* Checkbox */
+.powergrid input[type="checkbox"] {
+    @apply rounded border-border;
+}
+
+/* Search input */
+.powergrid input[type="search"],
+.powergrid input[type="text"].pg-search {
+    @apply border border-border rounded-md text-sm px-3 py-1.5 bg-background text-foreground placeholder:text-muted-foreground focus:ring-1 focus:ring-ring;
+}
