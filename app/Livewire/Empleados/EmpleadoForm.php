@@ -1,0 +1,227 @@
+<?php
+
+namespace App\Livewire\Empleados;
+
+use App\DTOs\EmpleadoData;
+use App\Models\Empleado;
+use App\Models\Cargo;
+use App\Models\Departamento;
+use App\Models\Empresa;
+use App\Models\HorarioLaboral;
+use App\Models\Persona;
+use App\Models\Sucursal;
+use App\Models\TipoContrato;
+use App\Services\EmpleadoService;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Livewire\Attributes\On;
+use Livewire\Component;
+
+class EmpleadoForm extends Component
+{
+    public ?Empleado $empleado = null;
+    public bool $isEditing = false;
+
+    // Campos del formulario
+    public ?int $persona_id = null;
+    public ?int $empresa_id = null;
+    public ?int $sucursal_id = null;
+    public ?int $departamento_id = null;
+    public ?int $cargo_id = null;
+    public string $codigo_empleado = '';
+    public ?int $tipo_contrato_id = null;
+    public ?int $horario_id = null;
+    public string $fecha_ingreso = '';
+    public ?string $fecha_egreso = null;
+    public string $estado = 'activo';
+    public ?int $jefe_inmediato_id = null;
+    public ?int $salario_base = null;
+    public ?string $numero_ips = null;
+    public ?string $profesion = null;
+
+    public array $estados = ['activo', 'vacaciones', 'licencia', 'suspendido', 'inactivo'];
+
+    protected function rules(): array
+    {
+        $rules = [
+            'persona_id' => 'required|exists:personas,id',
+            'empresa_id' => 'required|exists:empresas,id',
+            'sucursal_id' => 'required|exists:sucursales,id',
+            'cargo_id' => 'required|exists:cargos,id',
+            'codigo_empleado' => 'required|string|max:20',
+            'tipo_contrato_id' => 'nullable|exists:tipos_contrato,id',
+            'horario_id' => 'nullable|exists:horarios_laborales,id',
+            'fecha_ingreso' => 'required|date',
+            'fecha_egreso' => 'nullable|date|after_or_equal:fecha_ingreso',
+            'estado' => 'required|in:activo,vacaciones,licencia,suspendido,inactivo',
+            'jefe_inmediato_id' => 'nullable|exists:empleados,id',
+            'salario_base' => 'required|integer|min:0',
+            'numero_ips' => 'nullable|string|max:20',
+            'profesion' => 'nullable|string|max:100',
+        ];
+
+        if ($this->isEditing && $this->empleado) {
+            $rules['codigo_empleado'] = 'required|string|max:20|unique:empleados,codigo_empleado,' . $this->empleado->id;
+        } else {
+            $rules['codigo_empleado'] = 'required|string|max:20|unique:empleados,codigo_empleado';
+        }
+
+        return $rules;
+    }
+
+    protected function messages(): array
+    {
+        return [
+            'persona_id.required' => 'Debe seleccionar una persona.',
+            'empresa_id.required' => 'Debe seleccionar una empresa.',
+            'sucursal_id.required' => 'Debe seleccionar una sucursal.',
+            'cargo_id.required' => 'Debe seleccionar un cargo.',
+            'codigo_empleado.required' => 'El código de empleado es obligatorio.',
+            'codigo_empleado.unique' => 'Este código de empleado ya existe.',
+            'fecha_ingreso.required' => 'La fecha de ingreso es obligatoria.',
+            'salario_base.required' => 'El salario base es obligatorio.',
+        ];
+    }
+
+    public function mount(?int $empleadoId = null): void
+    {
+        if ($empleadoId) {
+            $this->empleado = Empleado::find($empleadoId);
+            if ($this->empleado) {
+                $this->isEditing = true;
+                $this->fillFields($this->empleado);
+            }
+        }
+    }
+
+    public function fillFields(Empleado $empleado): void
+    {
+        $this->persona_id = $empleado->persona_id;
+        $this->empresa_id = $empleado->empresa_id;
+        $this->sucursal_id = $empleado->sucursal_id;
+        $this->departamento_id = $empleado->departamento_id;
+        $this->cargo_id = $empleado->cargo_id;
+        $this->codigo_empleado = $empleado->codigo_empleado;
+        $this->tipo_contrato_id = $empleado->tipo_contrato_id;
+        $this->horario_id = $empleado->horario_id;
+        $this->fecha_ingreso = $empleado->fecha_ingreso?->format('Y-m-d');
+        $this->fecha_egreso = $empleado->fecha_egreso?->format('Y-m-d');
+        $this->estado = $empleado->estado;
+        $this->jefe_inmediato_id = $empleado->jefe_inmediato_id;
+        $this->salario_base = $empleado->salario_base;
+        $this->numero_ips = $empleado->numero_ips;
+        $this->profesion = $empleado->profesion;
+    }
+
+    public function save(EmpleadoService $service): void
+    {
+        $this->validate();
+
+        try {
+            $data = EmpleadoData::fromArray([
+                'persona_id' => $this->persona_id,
+                'empresa_id' => $this->empresa_id,
+                'sucursal_id' => $this->sucursal_id,
+                'departamento_id' => $this->departamento_id,
+                'cargo_id' => $this->cargo_id,
+                'codigo_empleado' => $this->codigo_empleado,
+                'tipo_contrato_id' => $this->tipo_contrato_id,
+                'horario_id' => $this->horario_id,
+                'fecha_ingreso' => $this->fecha_ingreso,
+                'fecha_egreso' => $this->fecha_egreso,
+                'estado' => $this->estado,
+                'jefe_inmediato_id' => $this->jefe_inmediato_id,
+                'salario_base' => $this->salario_base,
+                'numero_ips' => $this->numero_ips,
+                'profesion' => $this->profesion,
+            ]);
+
+            if ($this->isEditing && $this->empleado) {
+                $service->updateEmpleado($this->empleado, $data);
+                $message = 'Empleado actualizado exitosamente';
+                $this->dispatch('empleadoUpdated');
+            } else {
+                $service->createEmpleado($data);
+                $message = 'Empleado creado exitosamente';
+                $this->dispatch('empleadoCreated');
+            }
+
+            $this->dispatch('toast', message: $message, type: 'success');
+            $this->dispatch('close-modal', name: 'empleado-form-modal');
+            $this->resetForm();
+
+        } catch (\Exception $e) {
+            Log::error('Error saving empleado: ' . $e->getMessage());
+            $this->dispatch('toast', message: 'Error: ' . $e->getMessage(), type: 'error');
+        }
+    }
+
+    public function resetForm(): void
+    {
+        $this->reset([
+            'persona_id', 'empresa_id', 'sucursal_id', 'departamento_id',
+            'cargo_id', 'codigo_empleado', 'tipo_contrato_id', 'horario_id',
+            'fecha_ingreso', 'fecha_egreso', 'estado', 'jefe_inmediato_id',
+            'salario_base', 'numero_ips', 'profesion'
+        ]);
+        $this->isEditing = false;
+        $this->empleado = null;
+        $this->resetValidation();
+    }
+
+    public function cancel(): void
+    {
+        $this->resetForm();
+        $this->dispatch('close-modal', name: 'empleado-form-modal');
+    }
+
+    #[On('edit-empleado')]
+    public function edit(int $empleadoId): void
+    {
+        $this->resetForm();
+        $this->empleado = Empleado::find($empleadoId);
+
+        if ($this->empleado) {
+            $this->isEditing = true;
+            $this->fillFields($this->empleado);
+            $this->dispatch('open-modal', name: 'empleado-form-modal');
+        } else {
+            $this->dispatch('toast', message: 'Empleado no encontrado', type: 'error');
+        }
+    }
+
+    #[On('create-empleado')]
+    public function create(): void
+    {
+        $this->resetForm();
+        $this->isEditing = false;
+        $this->dispatch('open-modal', name: 'empleado-form-modal');
+    }
+
+    public function render()
+    {
+        return view('livewire.empleados.empleado-form', [
+            'personas' => Persona::where('estado', 1)->orderBy('apellidos')->get(),
+            'empresas' => Empresa::where('estado', 1)->orderBy('nombre')->get(),
+            'sucursales' => $this->empresa_id
+                ? Sucursal::where('empresa_id', $this->empresa_id)->where('estado', 1)->orderBy('nombre')->get()
+                : collect(),
+            'departamentos' => $this->empresa_id
+                ? Departamento::where('empresa_id', $this->empresa_id)->where('estado', 1)->orderBy('nombre')->get()
+                : collect(),
+            'cargos' => $this->empresa_id
+                ? Cargo::where('empresa_id', $this->empresa_id)->where('estado', 1)->orderBy('nombre')->get()
+                : collect(),
+            'tiposContrato' => $this->empresa_id
+                ? TipoContrato::where('empresa_id', $this->empresa_id)->orderBy('nombre')->get()
+                : collect(),
+            'horarios' => $this->empresa_id
+                ? HorarioLaboral::where('empresa_id', $this->empresa_id)->where('estado', 1)->orderBy('nombre')->get()
+                : collect(),
+            'jefes' => Empleado::with('persona')
+                ->when($this->empleado?->id, fn($q) => $q->where('id', '!=', $this->empleado->id))
+                ->activo()
+                ->get(),
+        ]);
+    }
+}

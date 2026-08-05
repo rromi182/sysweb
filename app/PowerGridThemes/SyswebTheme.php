@@ -14,29 +14,29 @@ class SyswebTheme extends Tailwind
             'layout' => [
                 'base'      => 'align-middle inline-block min-w-full w-full',
                 'div'       => 'w-full',
-                'table'     => 'min-w-full',
+                'table'     => 'min-w-full border-collapse',
                 'container' => 'overflow-x-auto',
-                'actions'   => 'flex gap-2',
+                'actions'   => 'flex items-center justify-end gap-1',
             ],
 
             'header' => [
-                'thead'    => 'border-b border-gray-200',
+                'thead'    => 'border-b border-border bg-transparent',
                 'tr'       => '',
-                'th'       => 'px-6 py-3 text-left text-xs font-medium text-gray-400 tracking-wide whitespace-nowrap',
-                'thAction' => 'px-6 py-3 text-left text-xs font-medium text-gray-400',
+                'th'       => 'h-8 px-3 text-left align-middle font-medium text-muted-foreground text-[11px] uppercase tracking-wider whitespace-nowrap select-none',
+                'thAction' => 'h-8 px-3 text-left align-middle font-medium text-muted-foreground text-[11px] uppercase tracking-wider',
             ],
 
             'body' => [
-                'tbody'              => 'bg-white',
+                'tbody'              => 'bg-transparent',
                 'tbodyEmpty'         => '',
-                'tr'                 => 'border-b border-gray-100 hover:bg-gray-50/60 transition-colors duration-100',
-                'td'                 => 'px-6 py-4 text-sm text-gray-700 whitespace-nowrap',
-                'tdEmpty'            => 'px-6 py-4 text-sm text-gray-400 whitespace-nowrap',
-                'tdSummarize'        => 'px-6 py-3 text-sm text-gray-400 text-right',
+                'tr'                 => 'border-b border-border transition-colors hover:bg-muted/40',
+                'td'                 => 'px-3 py-2.5 text-sm text-foreground align-middle',
+                'tdEmpty'            => 'px-3 py-2.5 text-sm text-muted-foreground align-middle',
+                'tdSummarize'        => 'px-3 py-2 text-sm text-muted-foreground text-right align-middle',
                 'trSummarize'        => '',
                 'tdFilters'          => '',
                 'trFilters'          => '',
-                'tdActionsContainer' => 'flex gap-2 items-center',
+                'tdActionsContainer' => 'flex items-center justify-end gap-1',
             ],
         ];
     }
@@ -44,18 +44,18 @@ class SyswebTheme extends Tailwind
     public function footer(): array
     {
         return [
-            'view'   => $this->root() . '.footer',
-            'select' => 'text-sm border border-gray-200 rounded-md px-3 py-1.5 bg-white text-gray-600 focus:outline-none focus:ring-1 focus:ring-gray-300 cursor-pointer',
-            'span'   => 'text-sm text-gray-600',
-            'background' => 'bg-white border-t border-gray-200 px-4 py-3 flex items-center justify-between sm:px-6',
-            'pagination' => 'flex items-center gap-1', // Esto controla la paginación
+            'view'       => $this->root() . '.footer',
+            'select'     => 'h-8 rounded-md border border-input bg-background px-2 py-1 text-xs shadow-sm transition-colors focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
+            'span'       => 'text-xs text-muted-foreground',
+            'background' => 'bg-transparent border-t border-border px-3 py-2.5 flex items-center justify-between',
+            'pagination' => 'flex items-center gap-1',
         ];
     }
 
     public function cols(): array
     {
         return [
-            'div' => 'select-none flex items-center gap-1.5',
+            'div' => 'select-none flex items-center gap-1',
         ];
     }
 
@@ -63,7 +63,7 @@ class SyswebTheme extends Tailwind
     {
         return [
             'view'  => $this->root() . '.editable',
-            'input' => 'text-sm border border-gray-200 rounded-md bg-white text-gray-700 py-1.5 px-2 focus:outline-none focus:ring-1 focus:ring-gray-300 w-full',
+            'input' => 'flex h-8 w-full rounded-md border border-input bg-background px-2 py-1 text-xs shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
         ];
     }
 
@@ -74,7 +74,7 @@ class SyswebTheme extends Tailwind
         ];
     }
 
-    public function checkbox(): array
+  public function checkbox(): array
     {
         return [
             'th'    => 'px-6 py-3',
@@ -87,19 +87,19 @@ class SyswebTheme extends Tailwind
     public function radio(): array
     {
         return [
-            'th'    => 'px-6 py-3',
+            'th'    => 'px-3 py-2',
             'base'  => '',
             'label' => 'flex items-center',
-            'input' => 'rounded-full border-gray-300 focus:ring-gray-300 h-4 w-4 cursor-pointer',
+            'input' => 'h-3.5 w-3.5 rounded-full border border-primary shadow focus:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
         ];
     }
 
     public function searchBox(): array
     {
         return [
-            'input'      => 'text-sm border border-gray-200 rounded-md px-3 py-1.5 bg-white text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 w-64 pl-8',
-            'iconClose'  => 'text-gray-300 hover:text-gray-400',
-            'iconSearch' => 'text-gray-300 mr-2 w-4 h-4',
+            'input'      => 'flex h-8 w-64 rounded-md border border-input bg-background px-2 py-1 text-xs shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 pl-7',
+            'iconClose'  => 'text-muted-foreground hover:text-foreground h-3.5 w-3.5',
+            'iconSearch' => 'text-muted-foreground mr-1.5 h-3.5 w-3.5',
         ];
     }
 
@@ -108,7 +108,7 @@ class SyswebTheme extends Tailwind
         return [
             'view'   => $this->root() . '.filters.boolean',
             'base'   => 'min-w-[5rem]',
-            'select' => 'text-sm border border-gray-200 rounded-md bg-white text-gray-700 py-1.5 px-2 focus:outline-none focus:ring-1 focus:ring-gray-300 w-full',
+            'select' => 'flex h-8 w-full rounded-md border border-input bg-background px-2 py-1 text-xs shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
         ];
     }
 
@@ -117,7 +117,7 @@ class SyswebTheme extends Tailwind
         return [
             'base'  => '',
             'view'  => $this->root() . '.filters.date-picker',
-            'input' => 'flatpickr flatpickr-input text-sm border border-gray-200 rounded-md bg-white text-gray-700 py-1.5 px-2 focus:outline-none focus:ring-1 focus:ring-gray-300 w-auto',
+            'input' => 'flatpickr flatpickr-input flex h-8 w-full rounded-md border border-input bg-background px-2 py-1 text-xs shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
         ];
     }
 
@@ -134,7 +134,7 @@ class SyswebTheme extends Tailwind
     {
         return [
             'view'  => $this->root() . '.filters.number',
-            'input' => 'text-sm border border-gray-200 rounded-md bg-white text-gray-700 py-1.5 px-2 focus:outline-none focus:ring-1 focus:ring-gray-300 w-full min-w-[5rem]',
+            'input' => 'flex h-8 w-full rounded-md border border-input bg-background px-2 py-1 text-xs shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring min-w-[5rem]',
         ];
     }
 
@@ -143,7 +143,7 @@ class SyswebTheme extends Tailwind
         return [
             'view'   => $this->root() . '.filters.select',
             'base'   => '',
-            'select' => 'text-sm border border-gray-200 rounded-md bg-white text-gray-700 py-1.5 px-2 focus:outline-none focus:ring-1 focus:ring-gray-300 w-full',
+            'select' => 'flex h-8 w-full rounded-md border border-input bg-background px-2 py-1 text-xs shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
         ];
     }
 
@@ -152,8 +152,8 @@ class SyswebTheme extends Tailwind
         return [
             'view'   => $this->root() . '.filters.input-text',
             'base'   => 'min-w-[9.5rem]',
-            'select' => 'text-sm border border-gray-200 rounded-md bg-white text-gray-700 py-1.5 px-2 focus:outline-none focus:ring-1 focus:ring-gray-300 w-full',
-            'input'  => 'text-sm border border-gray-200 rounded-md bg-white text-gray-700 py-1.5 px-2 focus:outline-none focus:ring-1 focus:ring-gray-300 w-full',
+            'select' => 'flex h-8 w-full rounded-md border border-input bg-background px-2 py-1 text-xs shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
+            'input'  => 'flex h-8 w-full rounded-md border border-input bg-background px-2 py-1 text-xs shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
         ];
     }
 }

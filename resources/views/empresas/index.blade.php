@@ -1,18 +1,24 @@
 <x-app-layout title="Empresas">
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-foreground leading-tight">
-                {{ __('Empresas') }}
-            </h2>
+    <div class="space-y-6">
+        {{-- Header de la página --}}
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="font-semibold text-xl text-foreground leading-tight">
+                    {{ __('Empresas') }}
+                </h2>
+                <p class="text-muted-foreground text-sm">
+                    Gestiona las empresas registradas en el sistema
+                </p>
+            </div>
             <x-primary-button x-data x-on:click="$dispatch('create-empresa')">
                 <x-heroicon-o-plus class="w-4 h-4 mr-2" />
                 {{ __('Crear Empresa') }}
             </x-primary-button>
         </div>
-    </x-slot>
 
-    <div class="py-4">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        {{-- Card que envuelve la tabla --}}
+        <div class="rounded-lg border bg-card text-card-foreground shadow-sm">
             <livewire:empresas.empresa-table />
         </div>
     </div>

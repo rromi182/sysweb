@@ -1,10 +1,13 @@
 <?php
+
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SalesController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FinanceReportController;
 use App\Http\Controllers\EmpresaController;
+use App\Livewire\Empleados\EmpleadoTable;
+use App\Livewire\Dashboard\HrDashboard;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // =========================================================================
@@ -15,14 +18,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::view('profile', 'profile.index')->name('profile.index');
+    // Route::get('/dashboard/hr', [HrDashboard::class])->name('dashboard.hr');
+    // Route::get('/dashboard/hr', HrDashboard::class)->name('dashboard.hr');
+    // HR Dashboard
+    // Empleados
+    //Route::get('/empleados', [EmpleadoTable::class])->name('empleados.index');
+    //Route::get('/empleados', 'App\Livewire\Empleados\EmpleadoTable')->name('empleados.index');
 
-    // =========================================================================
-    // Dashboard RRHH
-    // =========================================================================
-    //Route::get('/dashboard/rrhh', \App\Livewire\Dashboard\HrDashboard::class)
-        //->name('dashboard.hr');
-
-
+    // RRHH - Empleados
+    Route::get('/empleados', function () {
+    return view('empleados.index');
+})->name('empleados.index');
 
     // =========================================================================
     // Master Data
@@ -88,7 +94,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // Empresas APIs (para autocomplete, etc.)
-        Route::post('empresas', [\App\Http\Controllers\Api\EmpresaController::class, 'search'])->name('empresas.search');
-    });
+    Route::post('empresas', [\App\Http\Controllers\Api\EmpresaController::class, 'search'])->name('empresas.search');
+});
 
 require __DIR__ . '/auth.php';

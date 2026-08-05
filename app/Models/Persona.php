@@ -2,34 +2,23 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Persona extends Model
 {
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'personas';
 
     protected $fillable = [
-        'tipo_persona',
-        'nombres',
-        'apellidos',
-        'tipo_documento',
-        'numero_documento',
-        'fecha_nacimiento',
-        'sexo',
-        'estado_civil',
-        'nacionalidad',
-        'direccion',
-        'departamento',
-        'ciudad',
-        'telefono',
-        'correo',
-        'foto',
-        'estado',
-        'creado_por',
-        'actualizado_por'
+        'tipo_persona', 'nombres', 'apellidos', 'tipo_documento',
+        'numero_documento', 'fecha_nacimiento', 'sexo', 'estado_civil',
+        'nacionalidad', 'direccion', 'departamento', 'ciudad',
+        'telefono', 'correo', 'foto', 'estado',
+        'creado_por', 'actualizado_por',
     ];
 
     protected $casts = [
@@ -40,32 +29,15 @@ class Persona extends Model
         'deleted_at' => 'datetime',
     ];
 
-    // Relaciones
-    public function empleado()
+    protected $appends = ['nombre_completo'];
+
+    public function empleados(): HasMany
     {
-        return $this->hasOne(Empleado::class);
+        return $this->hasMany(Empleado::class, 'persona_id');
     }
 
-    public function creador()
+    public function getNombreCompletoAttribute(): string
     {
-        return $this->belongsTo(User::class, 'creado_por');
-    }
-
-    public function actualizador()
-    {
-        return $this->belongsTo(User::class, 'actualizado_por');
-    }
-
-    // Accessor para nombre completo
-    public function getNombreCompletoAttribute()
-    {
-        return $this->nombres . ' ' . $this->apellidos;
-    }
-
-    // Scope para búsqueda por documento
-    public function scopePorDocumento($query, $tipo, $numero)
-    {
-        return $query->where('tipo_documento', $tipo)
-                    ->where('numero_documento', $numero);
+        return "{$this->nombres} {$this->apellidos}";
     }
 }

@@ -141,6 +141,10 @@
    PowerGrid — Tema Minimalista
    ============================*/
 
+.powergrid table {
+    width: 100%;
+}
+
 /* Header de tabla */
 .powergrid table thead tr {
     @apply bg-transparent border-b border-border;
@@ -168,8 +172,29 @@
 }
 
 /* Footer / paginación */
-.powergrid .pg-footer {
-    @apply bg-transparent border-t border-border text-sm text-muted-foreground;
+.powergrid .pg-footer,
+.powergrid [class*="pg-footer"],
+.powergrid div[class*="bg-gray-800"],
+.powergrid div[class*="bg-slate-800"],
+.powergrid div[class*="bg-gray-900"] {
+    background-color: transparent !important;
+    color: hsl(var(--muted-foreground)) !important;
+}
+
+
+/* Paginación de PowerGrid */
+.powergrid nav[role="navigation"] {
+    @apply flex items-center gap-1;
+}
+
+.powergrid nav[role="navigation"] button,
+.powergrid nav[role="navigation"] span,
+.powergrid nav[role="navigation"] a {
+    @apply inline-flex h-9 w-9 items-center justify-center rounded-md border border-input bg-background text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50;
+}
+
+.powergrid nav[role="navigation"] span[aria-current="page"] {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90;
 }
 
 /* Checkbox */
