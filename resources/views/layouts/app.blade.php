@@ -30,7 +30,7 @@
         <div class="flex-1 flex flex-col overflow-hidden min-w-0">
             @include('layouts.topbar')
 
-            <main class="flex-1 overflow-y-auto">
+            <main class="flex-1 overflow-y-auto bg-background p-6 lg:p-8">
                 @isset($header)
                     <div class="py-5 px-4 sm:px-6 lg:px-8 border-b border-border">
                         {{ $header }}

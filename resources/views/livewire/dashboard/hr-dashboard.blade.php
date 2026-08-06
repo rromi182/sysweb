@@ -1,166 +1,230 @@
-<div>
-    <!-- Tarjetas de resumen -->
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
-        <div class="bg-white overflow-hidden shadow rounded-lg">
-            <div class="p-5">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0 bg-blue-500 rounded-md p-3">
-                        <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                        </svg>
-                    </div>
-                    <div class="ml-5 w-0 flex-1">
-                        <dl>
-                            <dt class="text-sm font-medium text-gray-500 truncate">Total Empleados</dt>
-                            <dd class="text-2xl font-semibold text-gray-900">{{ number_format($totalEmpleados) }}</dd>
-                        </dl>
-                    </div>
+<div class="space-y-6" x-data="{ tab: 'activos' }">
+    {{-- Header minimalista --}}
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-foreground">Recursos Humanos</h1>
+            <p class="text-sm text-muted-foreground mt-1">Panel de gestión de talento humano</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="{{ route('empleados.index') }}" wire:navigate
+               class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium shadow-sm hover:bg-accent hover:text-accent-foreground transition-colors">
+                <x-heroicon-o-users class="w-4 h-4" />
+                Ver todos
+            </a>
+        </div>
+    </div>
+
+    {{-- KPIs Cards modernas --}}
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {{-- Total Activos --}}
+        <div class="bg-card rounded-xl border border-border p-5 shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-muted-foreground">Empleados Activos</p>
+                    <p class="mt-2 text-3xl font-bold text-foreground">{{ number_format($this->stats['total_empleados']) }}</p>
                 </div>
+                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                    <x-heroicon-o-users class="h-5 w-5 text-primary" />
+                </div>
+            </div>
+            <div class="mt-4 flex items-center text-xs text-muted-foreground">
+                <x-heroicon-o-arrow-trending-up class="w-3.5 h-3.5 mr-1 text-emerald-500" />
+                <span class="text-emerald-600 font-medium">{{ $this->stats['nuevos_este_mes'] }}</span>
+                <span class="ml-1">nuevos este mes</span>
             </div>
         </div>
 
-        <div class="bg-white overflow-hidden shadow rounded-lg">
-            <div class="p-5">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0 bg-green-500 rounded-md p-3">
-                        <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v1m0 1v1m0 1v1m0 1v1"/>
-                        </svg>
-                    </div>
-                    <div class="ml-5 w-0 flex-1">
-                        <dl>
-                            <dt class="text-sm font-medium text-gray-500 truncate">Salario Promedio</dt>
-                            <dd class="text-2xl font-semibold text-gray-900">Gs. {{ number_format($promedioSalario, 0) }}</dd>
-                        </dl>
-                    </div>
+        {{-- Salario Promedio --}}
+        <div class="bg-card rounded-xl border border-border p-5 shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-muted-foreground">Salario Promedio</p>
+                    <p class="mt-2 text-3xl font-bold text-foreground">
+                        Gs. {{ number_format($this->stats['salario_promedio'], 0, ',', '.') }}
+                    </p>
                 </div>
+                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                    <x-heroicon-o-banknotes class="h-5 w-5 text-primary" />
+                </div>
+            </div>
+            <div class="mt-4 text-xs text-muted-foreground">Basado en empleados activos</div>
+        </div>
+
+        {{-- Departamentos --}}
+        <div class="bg-card rounded-xl border border-border p-5 shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-muted-foreground">Departamentos</p>
+                    <p class="mt-2 text-3xl font-bold text-foreground">{{ $this->stats['departamentos'] }}</p>
+                </div>
+                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                    <x-heroicon-o-building-office class="h-5 w-5 text-primary" />
+                </div>
+            </div>
+            <div class="mt-4 text-xs text-muted-foreground">Unidades organizativas activas</div>
+        </div>
+
+        {{-- Tasa de retención (cálculo simple) --}}
+        <div class="bg-card rounded-xl border border-border p-5 shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-muted-foreground">Nuevos Ingresos</p>
+                    <p class="mt-2 text-3xl font-bold text-foreground">{{ $this->stats['nuevos_este_mes'] }}</p>
+                </div>
+                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                    <x-heroicon-o-user-plus class="h-5 w-5 text-primary" />
+                </div>
+            </div>
+            <div class="mt-4 text-xs text-muted-foreground">Este mes · {{ now()->format('F Y') }}</div>
+        </div>
+    </div>
+
+    {{-- Gráficos y distribución --}}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {{-- Distribución por Departamento --}}
+        <div class="bg-card rounded-xl border border-border p-5 shadow-sm lg:col-span-2">
+            <h3 class="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+                <x-heroicon-o-chart-pie class="w-4 h-4 text-muted-foreground" />
+                Distribución por Departamento
+            </h3>
+            <div class="space-y-3">
+                @forelse($this->stats['por_departamento'] as $item)
+                    @php $pct = $this->stats['total_empleados'] > 0 ? round(($item->total / $this->stats['total_empleados']) * 100) : 0; @endphp
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-foreground font-medium">{{ $item->departamento->nombre ?? 'Sin Depto.' }}</span>
+                            <span class="text-muted-foreground">{{ $item->total }} ({{ $pct }}%)</span>
+                        </div>
+                        <div class="h-2 w-full rounded-full bg-muted overflow-hidden">
+                            <div class="h-full rounded-full bg-foreground transition-all duration-700" style="width: {{ $pct }}%"></div>
+                        </div>
+                    </div>
+                @empty
+                    <p class="text-sm text-muted-foreground">No hay datos disponibles</p>
+                @endforelse
             </div>
         </div>
 
-        <div class="bg-white overflow-hidden shadow rounded-lg">
-            <div class="p-5">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0 bg-indigo-500 rounded-md p-3">
-                        <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-                        </svg>
+        {{-- Tipos de Contrato --}}
+        <div class="bg-card rounded-xl border border-border p-5 shadow-sm">
+            <h3 class="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+                <x-heroicon-o-document-text class="w-4 h-4 text-muted-foreground" />
+                Tipos de Contrato
+            </h3>
+            <div class="space-y-4">
+                @forelse($this->stats['por_contrato'] as $item)
+                    <div class="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border">
+                        <div class="flex items-center gap-3">
+                            <div class="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                                <x-heroicon-o-shield-check class="w-4 h-4 text-primary" />
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-foreground">{{ $item->tipoContrato->nombre ?? 'N/A' }}</p>
+                                <p class="text-xs text-muted-foreground">Empleados</p>
+                            </div>
+                        </div>
+                        <span class="text-lg font-bold text-foreground">{{ $item->total }}</span>
                     </div>
-                    <div class="ml-5 w-0 flex-1">
-                        <dl>
-                            <dt class="text-sm font-medium text-gray-500 truncate">Activos</dt>
-                            <dd class="text-2xl font-semibold text-green-600">{{ number_format($empleadosActivos) }}</dd>
-                        </dl>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white overflow-hidden shadow rounded-lg">
-            <div class="p-5">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0 bg-red-500 rounded-md p-3">
-                        <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
-                        </svg>
-                    </div>
-                    <div class="ml-5 w-0 flex-1">
-                        <dl>
-                            <dt class="text-sm font-medium text-gray-500 truncate">Inactivos</dt>
-                            <dd class="text-2xl font-semibold text-red-600">{{ number_format($empleadosInactivos) }}</dd>
-                        </dl>
-                    </div>
-                </div>
+                @empty
+                    <p class="text-sm text-muted-foreground">No hay datos</p>
+                @endforelse
             </div>
         </div>
     </div>
 
-    <!-- Gráfico de contrataciones -->
-    <div class="bg-white overflow-hidden shadow rounded-lg mb-6">
-        <div class="p-6">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Contrataciones por Mes</h3>
-            <div wire:ignore>
-                <div id="hr-contrataciones-chart" style="height: 280px;"></div>
+    {{-- Filtros y Tabla de Empleados --}}
+    <div class="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
+        <div class="p-5 border-b border-border">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <h3 class="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <x-heroicon-o-user-group class="w-4 h-4 text-muted-foreground" />
+                    Empleados Recientes
+                </h3>
+                
+                <div class="flex flex-wrap items-center gap-2">
+                    {{-- Búsqueda --}}
+                    <div class="relative">
+                        <x-heroicon-o-magnifying-glass class="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <input wire:model.live.debounce.300ms="search" type="text" placeholder="Buscar empleado..." 
+                               class="h-9 w-[220px] rounded-md border border-input bg-background pl-9 pr-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                    </div>
+
+                    {{-- Filtro Estado --}}
+                    <select wire:model.live="estadoFilter" class="h-9 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                        <option value="activo">Activos</option>
+                        <option value="vacaciones">Vacaciones</option>
+                        <option value="licencia">Licencia</option>
+                        <option value="suspendido">Suspendidos</option>
+                        <option value="inactivo">Inactivos</option>
+                    </select>
+
+                    {{-- Filtro Departamento --}}
+                    <select wire:model.live="departamentoFilter" class="h-9 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                        <option value="">Todos los deptos.</option>
+                        @foreach($this->departamentosList as $depto)
+                            <option value="{{ $depto->id }}">{{ $depto->nombre }}</option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Top 5 empleados mejor pagados -->
-    <div class="bg-white overflow-hidden shadow rounded-lg">
-        <div class="px-6 py-4 border-b border-gray-200">
-            <h3 class="text-lg font-medium text-gray-900">Top 5 Mejor Pagados</h3>
-        </div>
+        {{-- Tabla minimalista --}}
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
+            <table class="w-full text-sm text-left">
+                <thead class="bg-muted/50 text-muted-foreground uppercase text-xs font-semibold">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Empleado</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cargo</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Salario</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                        <th class="px-5 py-3">Empleado</th>
+                        <th class="px-5 py-3">Documento</th>
+                        <th class="px-5 py-3">Departamento</th>
+                        <th class="px-5 py-3">Cargo</th>
+                        <th class="px-5 py-3">Contrato</th>
+                        <th class="px-5 py-3">Ingreso</th>
+                        <th class="px-5 py-3 text-right">Salario</th>
+                        <th class="px-5 py-3 text-center">Estado</th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    @foreach($topEmpleados as $index => $empleado)
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $index + 1 }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm font-medium text-gray-900">
-                                {{ $empleado->persona->nombre_completo ?? 'Sin nombre' }}
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ $empleado->cargo->nombre ?? 'Sin cargo' }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            Gs. {{ number_format($empleado->salario_base, 0) }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                {{ $empleado->estado == 'activo' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
-                                {{ ucfirst($empleado->estado) }}
-                            </span>
-                        </td>
-                    </tr>
-                    @endforeach
+                <tbody class="divide-y divide-border">
+                    @forelse($this->empleados as $emp)
+                        <tr class="hover:bg-muted/30 transition-colors group">
+                            <td class="px-5 py-3">
+                                <div class="flex items-center gap-3">
+                                    <x-avatar :name="$emp->nombre_completo" class="w-8 h-8 text-xs" />
+                                    <div>
+                                        <p class="font-medium text-foreground">{{ $emp->nombre_completo }}</p>
+                                        <p class="text-xs text-muted-foreground">{{ $emp->codigo_empleado }}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-5 py-3 text-muted-foreground">{{ $emp->documento }}</td>
+                            <td class="px-5 py-3 text-muted-foreground">{{ $emp->departamento->nombre ?? '-' }}</td>
+                            <td class="px-5 py-3 text-muted-foreground">{{ $emp->cargo->nombre ?? '-' }}</td>
+                            <td class="px-5 py-3 text-muted-foreground">{{ $emp->tipoContrato->nombre ?? '-' }}</td>
+                            <td class="px-5 py-3 text-muted-foreground">{{ $emp->fecha_ingreso?->format('d/m/Y') }}</td>
+                            <td class="px-5 py-3 text-right font-medium text-foreground">
+                                Gs. {{ number_format($emp->salario_base, 0, ',', '.') }}
+                            </td>
+                            <td class="px-5 py-3 text-center">
+                                {!! $emp->estado_badge !!}
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="8" class="px-5 py-8 text-center text-muted-foreground">
+                                No se encontraron empleados con los filtros aplicados.
+                            </td>
+                        </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
+        
+        @if($this->empleados->count() >= 10)
+            <div class="px-5 py-3 border-t border-border bg-muted/20 text-center">
+                <a href="{{ route('empleados.index') }}" wire:navigate class="text-sm font-medium text-primary hover:underline">
+                    Ver todos los empleados →
+                </a>
+            </div>
+        @endif
     </div>
 </div>
-
-@push('scripts')
-<script>
-  /*  document.addEventListener('DOMContentLoaded', function() {
-        var options = {
-            series: [{
-                name: 'Contrataciones',
-                data: @json($contratacionesMensuales)
-            }],
-            chart: {
-                type: 'bar',
-                height: 280,
-                toolbar: { show: false },
-                animations: { enabled: true }
-            },
-            plotOptions: {
-                bar: {
-                    borderRadius: 4,
-                    columnWidth: '50%',
-                }
-            },
-            xaxis: {
-                categories: @json($meses),
-                labels: { style: { fontSize: '12px' } }
-            },
-            yaxis: {
-                labels: { formatter: function(val) { return Math.round(val); } }
-            },
-            colors: ['#3B82F6'],
-            dataLabels: { enabled: false }
-        };
-        var chart = new ApexCharts(document.querySelector("#hr-contrataciones-chart"), options);
-        chart.render();
-    });*/
-</script>
-@endpush

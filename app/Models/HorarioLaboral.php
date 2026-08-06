@@ -9,7 +9,7 @@ class HorarioLaboral extends Model
 {
     use SoftDeletes;
 
-    protected $table = 'horarios-laborales';
+    protected $table = 'horarios_laborales';
 
     protected $fillable = [
         'nombre',

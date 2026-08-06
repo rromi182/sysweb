@@ -9,23 +9,37 @@ class TipoContrato extends Model
 {
     use SoftDeletes;
 
-    protected $table = 'tipos-contrato';
+    protected $table = 'tipos_contrato'; // ← CORREGIDO: guión bajo
 
     protected $fillable = [
         'empresa_id',
         'nombre',
         'codigo',
         'descripcion',
-        'duracion_efecto',
+        'duracion_defecto',
         'es_indefinido',
+        'creado_por',
+        'actualizado_por',
     ];
 
     protected $casts = [
-        'estado' => 'integer',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-        'deleted_at' => 'datetime',
+        'es_indefinido' => 'boolean',
+        'creado_en' => 'datetime',
+        'actualizado_en' => 'datetime',
+        'eliminado_en' => 'datetime',
     ];
+
+    // Laravel busca created_at/updated_at por defecto, pero tu tabla usa nombres en español
+    const CREATED_AT = 'creado_en';
+    const UPDATED_AT = 'actualizado_en';
+
+    // SoftDeletes usa deleted_at por defecto, pero tu columna se llama eliminado_en
+    protected $dates = ['eliminado_en'];
+
+    public function getDeletedAtColumn()
+    {
+        return 'eliminado_en';
+    }
 
     public function creador()
     {
@@ -41,5 +55,4 @@ class TipoContrato extends Model
     {
         return $this->belongsTo(Empresa::class, 'empresa_id');
     }
-
 }

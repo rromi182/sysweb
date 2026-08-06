@@ -18,17 +18,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::view('profile', 'profile.index')->name('profile.index');
-    // Route::get('/dashboard/hr', [HrDashboard::class])->name('dashboard.hr');
-    // Route::get('/dashboard/hr', HrDashboard::class)->name('dashboard.hr');
+
     // HR Dashboard
-    // Empleados
-    //Route::get('/empleados', [EmpleadoTable::class])->name('empleados.index');
-    //Route::get('/empleados', 'App\Livewire\Empleados\EmpleadoTable')->name('empleados.index');
+    Route::get('/dashboard/hr', function () {
+        return view('dashboard.hr');
+    })->name('dashboard.hr');
 
     // RRHH - Empleados
     Route::get('/empleados', function () {
-    return view('empleados.index');
-})->name('empleados.index');
+        return view('empleados.index');
+    })->name('empleados.index');
 
     // =========================================================================
     // Master Data

@@ -17,17 +17,24 @@
     {{-- Nav --}}
     <nav class="flex-1 overflow-y-auto overflow-x-hidden py-2 px-2 space-y-0.5 w-60">
 
-        {{-- Dashboard --}}
+        {{-- Dashboard 
         <a href="{{ route('dashboard') }}" wire:navigate
             class="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors
                   {{ request()->routeIs('dashboard') ? 'bg-accent/50 text-accent-foreground font-medium' : 'text-muted-foreground hover:bg-muted hover:text-foreground' }}">
             <x-heroicon-o-squares-2x2 class="w-4 h-4 shrink-0" />
-            <span>Panel de control</span>
+            <span>Panel de control GRAL</span>
+        </a>--}}
+
+        <a href="{{ route('dashboard.hr') }}" wire:navigate
+            class="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors
+                  {{ request()->routeIs('dashboard.hr') ? 'bg-accent/50 text-accent-foreground font-medium' : 'text-muted-foreground hover:bg-muted hover:text-foreground' }}">
+            <x-heroicon-o-squares-2x2 class="w-4 h-4 shrink-0" />
+            <span>Panel de control RRHH</span>
         </a>
 
 
         {{-- Recursos Humanos --}}
-        <x-sb-dropdown label="Recursos humanos" icon="user-group" :active="request()->routeIs(['sales.*', 'customers.*'])">
+        <x-sb-dropdown label="Recursos humanos" icon="user-group" :active="request()->routeIs(['dashboard.hr', 'customers.*'])">
             <x-sb-link :href="route('empleados.index')" :active="request()->routeIs('empleados.index')" label="Empleados" />
             <x-sb-link :href="route('sales.index')" :active="request()->routeIs(['sales.index', 'sales.show'])" label="Asistencias" />
             <x-sb-link :href="route('customers.index')" :active="request()->routeIs('customers.*')" label="Contratos" />
@@ -38,7 +45,7 @@
             <x-sb-link :href="route('sales.create')" :active="request()->routeIs('sales.create')" label="POS" />
             <x-sb-link :href="route('sales.index')" :active="request()->routeIs(['sales.index', 'sales.show'])" label="Ventas" />
             <x-sb-link :href="route('customers.index')" :active="request()->routeIs('customers.*')" label="Clientes" />
-        </x-sb-dropdown>
+        </x-sb-dropdown>--}}
 
         {{-- Compras 
         <x-sb-dropdown label="Compras" icon="shopping-cart" :active="request()->routeIs(['purchases.*', 'suppliers.*'])">
