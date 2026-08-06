@@ -74,7 +74,7 @@ class SyswebTheme extends Tailwind
         ];
     }
 
-  public function checkbox(): array
+    public function checkbox(): array
     {
         return [
             'th'    => 'px-6 py-3',
@@ -97,7 +97,7 @@ class SyswebTheme extends Tailwind
     public function searchBox(): array
     {
         return [
-            'input'      => 'flex h-8 w-64 rounded-md border border-input bg-background px-2 py-1 text-xs shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 pl-7',
+            'input'      => 'flex h-8 w-64 rounded-md border border-input bg-background px-3 py-1 text-xs shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 pl-8',
             'iconClose'  => 'text-muted-foreground hover:text-foreground h-3.5 w-3.5',
             'iconSearch' => 'text-muted-foreground mr-1.5 h-3.5 w-3.5',
         ];
