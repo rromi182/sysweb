@@ -107,16 +107,7 @@ class EmpleadoForm extends Component
         ];
     }
 
-    public function mount(?int $empleadoId = null): void
-    {
-        if ($empleadoId) {
-            $this->empleado = Empleado::with('persona')->find($empleadoId);
-            if ($this->empleado) {
-                $this->isEditing = true;
-                $this->fillFields($this->empleado);
-            }
-        }
-    }
+
 
     public function fillFields(Empleado $empleado): void
     {
@@ -245,12 +236,28 @@ class EmpleadoForm extends Component
     public function resetForm(): void
     {
         $this->reset([
-            'nombres', 'apellidos', 'tipo_documento', 'numero_documento',
-            'fecha_nacimiento', 'sexo', 'telefono', 'correo', 'direccion',
-            'empresa_id', 'sucursal_id', 'departamento_id', 'cargo_id',
-            'codigo_empleado', 'tipo_contrato_id', 'horario_id',
-            'fecha_ingreso', 'fecha_egreso', 'jefe_inmediato_id',
-            'salario_base', 'numero_ips', 'profesion'
+            'nombres',
+            'apellidos',
+            'tipo_documento',
+            'numero_documento',
+            'fecha_nacimiento',
+            'sexo',
+            'telefono',
+            'correo',
+            'direccion',
+            'empresa_id',
+            'sucursal_id',
+            'departamento_id',
+            'cargo_id',
+            'codigo_empleado',
+            'tipo_contrato_id',
+            'horario_id',
+            'fecha_ingreso',
+            'fecha_egreso',
+            'jefe_inmediato_id',
+            'salario_base',
+            'numero_ips',
+            'profesion'
         ]);
         $this->isEditing = false;
         $this->empleado = null;
@@ -264,18 +271,13 @@ class EmpleadoForm extends Component
     }
 
     #[On('edit-empleado')]
-    public function edit(int $empleadoId): void
+    public function edit(Empleado $empleado): void
     {
         $this->resetForm();
-        $this->empleado = Empleado::with('persona')->find($empleadoId);
-
-        if ($this->empleado) {
-            $this->isEditing = true;
-            $this->fillFields($this->empleado);
-            $this->dispatch('open-modal', name: 'empleado-form-modal');
-        } else {
-            $this->dispatch('toast', message: 'Empleado no encontrado', type: 'error');
-        }
+        $this->empleado = $empleado;
+        $this->isEditing = true;
+        $this->fillFields($empleado);
+        $this->dispatch('open-modal', name: 'empleado-form-modal');
     }
 
     #[On('create-empleado')]
@@ -283,6 +285,12 @@ class EmpleadoForm extends Component
     {
         $this->resetForm();
         $this->isEditing = false;
+
+        // Autogenerar código
+        $ultimo = Empleado::orderBy('id', 'desc')->first();
+        $siguienteNumero = $ultimo ? ((int) preg_replace('/[^0-9]/', '', $ultimo->codigo_empleado) + 1) : 1;
+        $this->codigo_empleado = 'EMP-' . str_pad($siguienteNumero, 3, '0', STR_PAD_LEFT);
+
         $this->dispatch('open-modal', name: 'empleado-form-modal');
     }
 

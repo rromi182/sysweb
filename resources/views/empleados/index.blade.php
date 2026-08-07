@@ -3,7 +3,7 @@
         {{-- Header de página --}}
         <div class="flex items-center justify-between">
             <div>
-                <h2 class="text-xl font-semibold tracking-tight">Empleados</h2>
+                <h2 class="text-xl font-semibold tracking-tight"> Base Colaboradores</h2>
                 <p class="text-sm text-muted-foreground">Gestiona el personal de tu empresa</p>
             </div>
             <x-primary-button x-data x-on:click="$dispatch('create-empleado')">

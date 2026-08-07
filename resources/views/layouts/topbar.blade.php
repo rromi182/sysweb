@@ -10,6 +10,13 @@
         <x-heroicon-o-bars-3 class="w-4 h-4" />
     </button>
 
+    <a href="{{ route('dashboard.hr') }}" wire:navigate
+            class="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors
+                  {{ request()->routeIs('dashboard.hr') ? 'bg-accent/50 text-accent-foreground font-medium' : 'text-muted-foreground hover:bg-muted hover:text-foreground' }}">
+            <x-heroicon-o-home class="w-4 h-4 shrink-0" />
+            <span>Inicio</span>
+        </a>
+
     <span class="flex-1"></span>
 
     {{-- Usuario --}}

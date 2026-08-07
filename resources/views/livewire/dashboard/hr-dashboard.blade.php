@@ -3,7 +3,7 @@
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
             <h1 class="text-2xl font-bold tracking-tight text-foreground">Recursos Humanos</h1>
-            <p class="text-sm text-muted-foreground mt-1">Panel de gestión de talento humano</p>
+            <p class="text-sm text-muted-foreground mt-1">Panel de gestión de Recursos Humanos</p>
         </div>
         <div class="flex items-center gap-2">
             <a href="{{ route('empleados.index') }}" wire:navigate
@@ -20,7 +20,7 @@
         <div class="bg-card rounded-xl border border-border p-5 shadow-sm hover:shadow-md transition-shadow">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-muted-foreground">Empleados Activos</p>
+                    <p class="text-sm font-medium text-muted-foreground">Colaboladores Activos</p>
                     <p class="mt-2 text-3xl font-bold text-foreground">{{ number_format($this->stats['total_empleados']) }}</p>
                 </div>
                 <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
@@ -79,6 +79,102 @@
         </div>
     </div>
 
+    {{-- Filtros y Tabla de Empleados --}}
+    <div class="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
+        <div class="p-5 border-b border-border">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <h3 class="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <x-heroicon-o-user-group class="w-4 h-4 text-muted-foreground" />
+                    Colaboladores Recientes
+                </h3>
+                
+                <div class="flex flex-wrap items-center gap-2">
+                    {{-- Búsqueda --}}
+                    <div class="relative">
+                        <x-heroicon-o-magnifying-glass class="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <input wire:model.live.debounce.300ms="search" type="text" placeholder="Buscar colaborador..." 
+                               class="h-9 w-[220px] rounded-md border border-input bg-background pl-9 pr-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                    </div>
+
+                    {{-- Filtro Estado --}}
+                    <select wire:model.live="estadoFilter" class="h-9 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                        <option value="activo">Activos</option>
+                        <option value="vacaciones">Vacaciones</option>
+                        <option value="licencia">Licencia</option>
+                        <option value="suspendido">Suspendidos</option>
+                        <option value="inactivo">Inactivos</option>
+                    </select>
+
+                    {{-- Filtro Departamento --}}
+                    <select wire:model.live="departamentoFilter" class="h-9 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                        <option value="">Todos los deptos.</option>
+                        @foreach($this->departamentosList as $depto)
+                            <option value="{{ $depto->id }}">{{ $depto->nombre }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        {{-- Tabla minimalista --}}
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+                <thead class="bg-muted/50 text-muted-foreground uppercase text-xs font-semibold">
+                    <tr>
+                        <th class="px-5 py-3">Colaborador</th>
+                        <th class="px-5 py-3">Documento</th>
+                        <th class="px-5 py-3">Departamento</th>
+                        <th class="px-5 py-3">Cargo</th>
+                        <th class="px-5 py-3">Contrato</th>
+                        <th class="px-5 py-3">Ingreso</th>
+                        <th class="px-5 py-3 text-right">Salario</th>
+                        <th class="px-5 py-3 text-center">Estado</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-border">
+                    @forelse($this->empleados as $emp)
+                        <tr class="hover:bg-muted/30 transition-colors group">
+                            <td class="px-5 py-3">
+                                <div class="flex items-center gap-3">
+                                    <x-avatar :name="$emp->nombre_completo" class="w-8 h-8 text-xs" />
+                                    <div>
+                                        <p class="font-medium text-foreground">{{ $emp->nombre_completo }}</p>
+                                        <p class="text-xs text-muted-foreground">{{ $emp->codigo_empleado }}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-5 py-3 text-muted-foreground">{{ $emp->documento }}</td>
+                            <td class="px-5 py-3 text-muted-foreground">{{ $emp->departamento->nombre ?? '-' }}</td>
+                            <td class="px-5 py-3 text-muted-foreground">{{ $emp->cargo->nombre ?? '-' }}</td>
+                            <td class="px-5 py-3 text-muted-foreground">{{ $emp->tipoContrato->nombre ?? '-' }}</td>
+                            <td class="px-5 py-3 text-muted-foreground">{{ $emp->fecha_ingreso?->format('d/m/Y') }}</td>
+                            <td class="px-5 py-3 text-right font-medium text-foreground">
+                                Gs. {{ number_format($emp->salario_base, 0, ',', '.') }}
+                            </td>
+                            <td class="px-5 py-3 text-center">
+                                {!! $emp->estado_badge !!}
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="8" class="px-5 py-8 text-center text-muted-foreground">
+                                No se encontraron empleados con los filtros aplicados.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        
+        @if($this->empleados->count() >= 10)
+            <div class="px-5 py-3 border-t border-border bg-muted/20 text-center">
+                <a href="{{ route('empleados.index') }}" wire:navigate class="text-sm font-medium text-primary hover:underline">
+                    Ver todos los empleados →
+                </a>
+            </div>
+        @endif
+    </div>
+
     {{-- Gráficos y distribución --}}
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {{-- Distribución por Departamento --}}
@@ -132,99 +228,5 @@
         </div>
     </div>
 
-    {{-- Filtros y Tabla de Empleados --}}
-    <div class="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
-        <div class="p-5 border-b border-border">
-            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                <h3 class="text-sm font-semibold text-foreground flex items-center gap-2">
-                    <x-heroicon-o-user-group class="w-4 h-4 text-muted-foreground" />
-                    Empleados Recientes
-                </h3>
-                
-                <div class="flex flex-wrap items-center gap-2">
-                    {{-- Búsqueda --}}
-                    <div class="relative">
-                        <x-heroicon-o-magnifying-glass class="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                        <input wire:model.live.debounce.300ms="search" type="text" placeholder="Buscar empleado..." 
-                               class="h-9 w-[220px] rounded-md border border-input bg-background pl-9 pr-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
-                    </div>
-
-                    {{-- Filtro Estado --}}
-                    <select wire:model.live="estadoFilter" class="h-9 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
-                        <option value="activo">Activos</option>
-                        <option value="vacaciones">Vacaciones</option>
-                        <option value="licencia">Licencia</option>
-                        <option value="suspendido">Suspendidos</option>
-                        <option value="inactivo">Inactivos</option>
-                    </select>
-
-                    {{-- Filtro Departamento --}}
-                    <select wire:model.live="departamentoFilter" class="h-9 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
-                        <option value="">Todos los deptos.</option>
-                        @foreach($this->departamentosList as $depto)
-                            <option value="{{ $depto->id }}">{{ $depto->nombre }}</option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-        </div>
-
-        {{-- Tabla minimalista --}}
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm text-left">
-                <thead class="bg-muted/50 text-muted-foreground uppercase text-xs font-semibold">
-                    <tr>
-                        <th class="px-5 py-3">Empleado</th>
-                        <th class="px-5 py-3">Documento</th>
-                        <th class="px-5 py-3">Departamento</th>
-                        <th class="px-5 py-3">Cargo</th>
-                        <th class="px-5 py-3">Contrato</th>
-                        <th class="px-5 py-3">Ingreso</th>
-                        <th class="px-5 py-3 text-right">Salario</th>
-                        <th class="px-5 py-3 text-center">Estado</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-border">
-                    @forelse($this->empleados as $emp)
-                        <tr class="hover:bg-muted/30 transition-colors group">
-                            <td class="px-5 py-3">
-                                <div class="flex items-center gap-3">
-                                    <x-avatar :name="$emp->nombre_completo" class="w-8 h-8 text-xs" />
-                                    <div>
-                                        <p class="font-medium text-foreground">{{ $emp->nombre_completo }}</p>
-                                        <p class="text-xs text-muted-foreground">{{ $emp->codigo_empleado }}</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-5 py-3 text-muted-foreground">{{ $emp->documento }}</td>
-                            <td class="px-5 py-3 text-muted-foreground">{{ $emp->departamento->nombre ?? '-' }}</td>
-                            <td class="px-5 py-3 text-muted-foreground">{{ $emp->cargo->nombre ?? '-' }}</td>
-                            <td class="px-5 py-3 text-muted-foreground">{{ $emp->tipoContrato->nombre ?? '-' }}</td>
-                            <td class="px-5 py-3 text-muted-foreground">{{ $emp->fecha_ingreso?->format('d/m/Y') }}</td>
-                            <td class="px-5 py-3 text-right font-medium text-foreground">
-                                Gs. {{ number_format($emp->salario_base, 0, ',', '.') }}
-                            </td>
-                            <td class="px-5 py-3 text-center">
-                                {!! $emp->estado_badge !!}
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="8" class="px-5 py-8 text-center text-muted-foreground">
-                                No se encontraron empleados con los filtros aplicados.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-        
-        @if($this->empleados->count() >= 10)
-            <div class="px-5 py-3 border-t border-border bg-muted/20 text-center">
-                <a href="{{ route('empleados.index') }}" wire:navigate class="text-sm font-medium text-primary hover:underline">
-                    Ver todos los empleados →
-                </a>
-            </div>
-        @endif
-    </div>
+    
 </div>
