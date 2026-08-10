@@ -3,37 +3,32 @@
 namespace App\Livewire\Empleados;
 
 use App\DTOs\EmpleadoData;
-use App\Models\Empleado;
+use App\Exceptions\EmpleadoException;
 use App\Models\Cargo;
 use App\Models\Departamento;
+use App\Models\Empleado;
 use App\Models\Empresa;
 use App\Models\HorarioLaboral;
-use App\Models\Persona;
 use App\Models\Sucursal;
 use App\Models\TipoContrato;
+use App\Services\EmpleadoService;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
 class EmpleadoForm extends Component
 {
-    public ?Empleado $empleado = null;
-    public bool $isEditing = false;
-
-    // ── Datos de Persona (inline) ──
     public string $nombres = '';
     public string $apellidos = '';
-    public string $tipo_documento = 'CI';
+    public array $tiposDocumento = ['CI', 'RUC', 'PASAPORTE'];
+    public array $sexos = ['M' => 'Masculino', 'F' => 'Femenino'];
     public string $numero_documento = '';
     public ?string $fecha_nacimiento = null;
-    public string $sexo = 'M';
     public ?string $telefono = null;
     public ?string $correo = null;
     public ?string $direccion = null;
 
-    // ── Datos de Empleado ──
     public ?int $empresa_id = null;
     public ?int $sucursal_id = null;
     public ?int $departamento_id = null;
@@ -44,28 +39,25 @@ class EmpleadoForm extends Component
     public string $fecha_ingreso = '';
     public ?string $fecha_egreso = null;
     public ?int $jefe_inmediato_id = null;
-    public ?int $salario_base = null;
+    public int $salario_base = 0;
     public ?string $numero_ips = null;
     public ?string $profesion = null;
 
-    public array $tiposDocumento = ['CI', 'RUC', 'PASAPORTE', 'DNI'];
-    public array $sexos = ['M' => 'Masculino', 'F' => 'Femenino'];
+    public bool $isEditing = false;
+    public ?Empleado $empleado = null;
 
     protected function rules(): array
     {
         $rules = [
-            // Persona
             'nombres' => 'required|string|max:100',
             'apellidos' => 'required|string|max:100',
-            'tipo_documento' => 'required|in:CI,RUC,PASAPORTE,DNI',
+            'tiposDocumento' => 'required|in:CI,RUC,PASAPORTE',
             'numero_documento' => 'required|string|max:30',
             'fecha_nacimiento' => 'nullable|date',
-            'sexo' => 'required|in:M,F',
+            'sexos' => 'required|in:M,F',
             'telefono' => 'nullable|string|max:30',
             'correo' => 'nullable|email|max:100',
             'direccion' => 'nullable|string|max:255',
-
-            // Empleado
             'empresa_id' => 'required|exists:empresas,id',
             'sucursal_id' => 'required|exists:sucursales,id',
             'cargo_id' => 'required|exists:cargos,id',
@@ -107,23 +99,19 @@ class EmpleadoForm extends Component
         ];
     }
 
-
-
     public function fillFields(Empleado $empleado): void
     {
-        // Datos de persona
         $persona = $empleado->persona;
         $this->nombres = $persona?->nombres ?? '';
         $this->apellidos = $persona?->apellidos ?? '';
-        $this->tipo_documento = $persona?->tipo_documento ?? 'CI';
+        $this->tiposDocumento = $persona?->tipo_documento ?? 'CI';
         $this->numero_documento = $persona?->numero_documento ?? '';
         $this->fecha_nacimiento = $persona?->fecha_nacimiento?->format('Y-m-d');
-        $this->sexo = $persona?->sexo ?? 'M';
+        $this->sexos = $persona?->sexo ?? 'M';
         $this->telefono = $persona?->telefono;
         $this->correo = $persona?->correo;
         $this->direccion = $persona?->direccion;
 
-        // Datos de empleado
         $this->empresa_id = $empleado->empresa_id;
         $this->sucursal_id = $empleado->sucursal_id;
         $this->departamento_id = $empleado->departamento_id;
@@ -139,125 +127,62 @@ class EmpleadoForm extends Component
         $this->profesion = $empleado->profesion;
     }
 
-    public function save(): void
+    // ═══════════════════════════════════════════════════════════════
+    // SAVE: ahora delega TODO al Service + DTO
+    // ═══════════════════════════════════════════════════════════════
+    public function save(EmpleadoService $service): void
     {
-        $this->validate();
+        $validated = $this->validate();
 
         try {
-            DB::transaction(function () {
-                if ($this->isEditing && $this->empleado) {
-                    // Actualizar persona
-                    $this->empleado->persona->update([
-                        'nombres' => $this->nombres,
-                        'apellidos' => $this->apellidos,
-                        'tipo_documento' => $this->tipo_documento,
-                        'numero_documento' => $this->numero_documento,
-                        'fecha_nacimiento' => $this->fecha_nacimiento,
-                        'sexo' => $this->sexo,
-                        'telefono' => $this->telefono,
-                        'correo' => $this->correo,
-                        'direccion' => $this->direccion,
-                        'actualizado_por' => Auth::id(),
-                    ]);
+            if ($this->isEditing && $this->empleado) {
+                // ─── ACTUALIZAR ───
+                $data = EmpleadoData::fromArray([
+                    ...$validated,
+                    'persona_id' => $this->empleado->persona_id,
+                    'estado' => $this->empleado->estado,
+                ], Auth::id());
 
-                    // Actualizar empleado
-                    $this->empleado->update([
-                        'empresa_id' => $this->empresa_id,
-                        'sucursal_id' => $this->sucursal_id,
-                        'departamento_id' => $this->departamento_id,
-                        'cargo_id' => $this->cargo_id,
-                        'codigo_empleado' => $this->codigo_empleado,
-                        'tipo_contrato_id' => $this->tipo_contrato_id,
-                        'horario_id' => $this->horario_id,
-                        'fecha_ingreso' => $this->fecha_ingreso,
-                        'fecha_egreso' => $this->fecha_egreso,
-                        'jefe_inmediato_id' => $this->jefe_inmediato_id,
-                        'salario_base' => $this->salario_base,
-                        'numero_ips' => $this->numero_ips,
-                        'profesion' => $this->profesion,
-                        'actualizado_por' => Auth::id(),
-                    ]);
+                $service->updateEmpleado($this->empleado, $data);
 
-                    $this->dispatch('empleadoUpdated');
-                    $message = 'Empleado actualizado exitosamente';
-                } else {
-                    // Crear persona (estado = 1 activo, por debajo)
-                    $persona = Persona::create([
-                        'tipo_persona' => 'FISICA',
-                        'nombres' => $this->nombres,
-                        'apellidos' => $this->apellidos,
-                        'tipo_documento' => $this->tipo_documento,
-                        'numero_documento' => $this->numero_documento,
-                        'fecha_nacimiento' => $this->fecha_nacimiento,
-                        'sexo' => $this->sexo,
-                        'telefono' => $this->telefono,
-                        'correo' => $this->correo,
-                        'direccion' => $this->direccion,
-                        'estado' => 1, // activo en tabla personas
-                        'creado_por' => Auth::id(),
-                        'actualizado_por' => Auth::id(),
-                    ]);
+                $this->dispatch('empleadoUpdated');
+                $message = 'Empleado actualizado exitosamente';
 
-                    // Crear empleado
-                    Empleado::create([
-                        'persona_id' => $persona->id,
-                        'empresa_id' => $this->empresa_id,
-                        'sucursal_id' => $this->sucursal_id,
-                        'departamento_id' => $this->departamento_id,
-                        'cargo_id' => $this->cargo_id,
-                        'codigo_empleado' => $this->codigo_empleado,
-                        'tipo_contrato_id' => $this->tipo_contrato_id,
-                        'horario_id' => $this->horario_id,
-                        'fecha_ingreso' => $this->fecha_ingreso,
-                        'fecha_egreso' => $this->fecha_egreso,
-                        'estado' => 'activo', // por código
-                        'jefe_inmediato_id' => $this->jefe_inmediato_id,
-                        'salario_base' => $this->salario_base,
-                        'numero_ips' => $this->numero_ips,
-                        'profesion' => $this->profesion,
-                        'creado_por' => Auth::id(),
-                        'actualizado_por' => Auth::id(),
-                    ]);
+            } else {
+                // ─── CREAR ───
+                $data = EmpleadoData::fromArray([
+                    ...$validated,
+                    'estado' => 'activo',
+                ], Auth::id());
 
-                    $this->dispatch('empleadoCreated');
-                    $message = 'Empleado creado exitosamente';
-                }
+                $service->createEmpleado($data);
 
-                $this->dispatch('toast', message: $message, type: 'success');
-                $this->dispatch('close-modal', name: 'empleado-form-modal');
-                $this->resetForm();
-            });
+                $this->dispatch('empleadoCreated');
+                $message = 'Empleado creado exitosamente';
+            }
+
+            $this->dispatch('toast', message: $message, type: 'success');
+            $this->dispatch('close-modal', name: 'empleado-form-modal');
+            $this->resetForm();
+
+        } catch (EmpleadoException $e) {
+            $this->dispatch('toast', message: $e->getMessage(), type: 'error');
+
         } catch (\Exception $e) {
             Log::error('Error saving empleado: ' . $e->getMessage());
-            $this->dispatch('toast', message: 'Error: ' . $e->getMessage(), type: 'error');
+            $this->dispatch('toast', message: 'Error inesperado. Contacte al administrador.', type: 'error');
         }
     }
 
     public function resetForm(): void
     {
         $this->reset([
-            'nombres',
-            'apellidos',
-            'tipo_documento',
-            'numero_documento',
-            'fecha_nacimiento',
-            'sexo',
-            'telefono',
-            'correo',
-            'direccion',
-            'empresa_id',
-            'sucursal_id',
-            'departamento_id',
-            'cargo_id',
-            'codigo_empleado',
-            'tipo_contrato_id',
-            'horario_id',
-            'fecha_ingreso',
-            'fecha_egreso',
-            'jefe_inmediato_id',
-            'salario_base',
-            'numero_ips',
-            'profesion'
+            'nombres', 'apellidos', 'tiposDocumento', 'numero_documento',
+            'fecha_nacimiento', 'sexos', 'telefono', 'correo', 'direccion',
+            'empresa_id', 'sucursal_id', 'departamento_id', 'cargo_id',
+            'codigo_empleado', 'tipo_contrato_id', 'horario_id',
+            'fecha_ingreso', 'fecha_egreso', 'jefe_inmediato_id',
+            'salario_base', 'numero_ips', 'profesion'
         ]);
         $this->isEditing = false;
         $this->empleado = null;
@@ -280,17 +205,15 @@ class EmpleadoForm extends Component
         $this->dispatch('open-modal', name: 'empleado-form-modal');
     }
 
+    // ═══════════════════════════════════════════════════════════════
+    // CREATE: usa el Service para generar código
+    // ═══════════════════════════════════════════════════════════════
     #[On('create-empleado')]
-    public function create(): void
+    public function create(EmpleadoService $service): void
     {
         $this->resetForm();
         $this->isEditing = false;
-
-        // Autogenerar código
-        $ultimo = Empleado::orderBy('id', 'desc')->first();
-        $siguienteNumero = $ultimo ? ((int) preg_replace('/[^0-9]/', '', $ultimo->codigo_empleado) + 1) : 1;
-        $this->codigo_empleado = 'EMP-' . str_pad($siguienteNumero, 3, '0', STR_PAD_LEFT);
-
+        $this->codigo_empleado = $service->generateNextCode();
         $this->dispatch('open-modal', name: 'empleado-form-modal');
     }
 

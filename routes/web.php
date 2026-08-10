@@ -29,6 +29,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return view('empleados.index');
     })->name('empleados.index');
 
+    // EmpleadoController — API de búsqueda + operaciones CRUD
+    Route::post('empleados/search', [\App\Http\Controllers\EmpleadoController::class, 'search'])
+        ->name('empleados.search');
+    Route::patch('empleados/{empleado}/inactivar', [\App\Http\Controllers\EmpleadoController::class, 'inactivar'])
+        ->name('empleados.inactivar');
+
     // =========================================================================
     // Master Data
     // =========================================================================

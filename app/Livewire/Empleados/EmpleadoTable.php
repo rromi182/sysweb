@@ -170,7 +170,7 @@ final class EmpleadoTable extends PowerGridComponent
     }
 
     #[On('inactivar')]
-    public function inactivar(int $rowId): void
+    public function inactivar(int $rowId, EmpleadoService $service): void
     {
         try {
             $empleado = Empleado::find($rowId);
@@ -180,20 +180,7 @@ final class EmpleadoTable extends PowerGridComponent
                 return;
             }
 
-            // Inactivar empleado
-            $empleado->update([
-                'estado' => 'inactivo',
-                'fecha_egreso' => now()->format('Y-m-d'),
-                'actualizado_por' => Auth::id(),
-            ]);
-
-            // Inactivar persona asociada (estado 0 = inactivo)
-            if ($empleado->persona) {
-                $empleado->persona->update([
-                    'estado' => 0,
-                    'actualizado_por' => Auth::id(),
-                ]);
-            }
+            $service->inactivarEmpleado($empleado);
 
             $this->dispatch('toast', message: 'Empleado inactivado correctamente', type: 'success');
         } catch (\Exception $e) {
