@@ -5,6 +5,7 @@ use App\Http\Controllers\SalesController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FinanceReportController;
+use App\Http\Controllers\NominaController;
 use App\Http\Controllers\EmpresaController;
 use App\Livewire\Empleados\EmpleadoTable;
 use App\Livewire\Dashboard\HrDashboard;
@@ -46,6 +47,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::view('products', 'products.index')->name('products.index');
         Route::view('empresas', 'empresas.index')->name('empresas.index');
     });
+
+    Route::middleware(['auth'])->prefix('nomina')->name('nomina.')->group(function () {
+        Route::get('/', [NominaController::class, 'index'])->name('index');
+        Route::get('/resumen', [NominaController::class, 'resumen'])->name('resumen');
+
+        // API endpoints para AJAX / fetch
+        Route::post('/movimiento', [NominaController::class, 'store'])->name('store');
+        Route::post('/liquidar', [NominaController::class, 'liquidar'])->name('liquidar');
+        Route::get('/subsidios', [NominaController::class, 'calcularSubsidios'])->name('subsidios');
+        Route::get('/aportes-patronales', [NominaController::class, 'aportesPatronales'])->name('aportes-patronales');
+    });
+
 
     // =========================================================================
     // Transactions

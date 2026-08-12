@@ -38,6 +38,7 @@
             <x-sb-link :href="route('empleados.index')" :active="request()->routeIs('empleados.index')" label="Empleados" />
             <x-sb-link :href="route('sales.index')" :active="request()->routeIs(['sales.index', 'sales.show'])" label="Asistencias" />
             <x-sb-link :href="route('customers.index')" :active="request()->routeIs('customers.*')" label="Contratos" />
+            <x-sb-link :href="route('nomina.index')" :active="request()->routeIs('nomina.*')" label="Movimientos de Nómina" />
         </x-sb-dropdown>
 
         {{-- Ventas 
