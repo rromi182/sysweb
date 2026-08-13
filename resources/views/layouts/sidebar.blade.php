@@ -19,10 +19,10 @@
 
         {{-- Dashboard 
         <a href="{{ route('dashboard') }}" wire:navigate
-            class="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors
-                  {{ request()->routeIs('dashboard') ? 'bg-accent/50 text-accent-foreground font-medium' : 'text-muted-foreground hover:bg-muted hover:text-foreground' }}">
-            <x-heroicon-o-squares-2x2 class="w-4 h-4 shrink-0" />
-            <span>Panel de control GRAL</span>
+        class="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors
+        {{ request()->routeIs('dashboard') ? 'bg-accent/50 text-accent-foreground font-medium' : 'text-muted-foreground hover:bg-muted hover:text-foreground' }}">
+        <x-heroicon-o-squares-2x2 class="w-4 h-4 shrink-0" />
+        <span>Panel de control GRAL</span>
         </a>--}}
 
         <a href="{{ route('dashboard.hr') }}" wire:navigate
@@ -34,12 +34,15 @@
 
 
         {{-- Recursos Humanos --}}
-        <x-sb-dropdown label="Recursos humanos" icon="user-group" :active="request()->routeIs(['dashboard.hr', 'customers.*'])">
+        {{-- Recursos Humanos --}}
+        <x-sb-dropdown label="Recursos humanos" icon="user-group" :active="request()->routeIs(['dashboard.hr', 'customers.*', 'empleados.*', 'sales.*'])">
             <x-sb-link :href="route('empleados.index')" :active="request()->routeIs('empleados.index')" label="Empleados" />
             <x-sb-link :href="route('sales.index')" :active="request()->routeIs(['sales.index', 'sales.show'])" label="Asistencias" />
             <x-sb-link :href="route('customers.index')" :active="request()->routeIs('customers.*')" label="Contratos" />
-            <x-sb-link :href="route('nomina.index')" :active="request()->routeIs('nomina.*')" label="Movimientos de Nómina" />
+            <x-sb-link :href="route('nomina.index')" :active="request()->routeIs('nomina.index')" label="Movimientos Nómina" />
+            <x-sb-link :href="route('nomina.resumen')" :active="request()->routeIs('nomina.resumen')" label="Resumen Nómina" />
         </x-sb-dropdown>
+
 
         {{-- Ventas 
         <x-sb-dropdown label="Ventas" icon="banknotes" :active="request()->routeIs(['sales.*', 'customers.*'])">

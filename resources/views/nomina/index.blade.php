@@ -5,7 +5,7 @@
                 <h2 class="text-xl font-semibold tracking-tight">Movimientos de Nómina</h2>
                 <p class="text-sm text-muted-foreground">Registro de salarios, extras, vales y descuentos</p>
             </div>
-            <x-primary-button x-data x-on:click="$dispatch('create-movimiento')">
+            <x-primary-button x-data x-on:click="$dispatch('open-modal', { name: 'nomina-form-modal' })">
                 <x-heroicon-o-plus class="w-4 h-4 mr-2" />
                 {{ __('Nuevo Movimiento') }}
             </x-primary-button>

@@ -1,12 +1,12 @@
 <div>
     <div class="flex flex-wrap items-center gap-4 mb-6">
-        <div>
-            <x-label for="anio" value="Año" />
-            <x-input type="number" wire:model.live="anio" class="mt-1 w-32" />
+        <div class="space-y-1">
+            <x-input-label for="anio" value="Año" class="text-xs" />
+            <input id="anio" wire:model.live="anio" type="number" class="h-10 w-32 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
         </div>
-        <div>
-            <x-label for="mes" value="Mes" />
-            <x-input type="number" wire:model.live="mes" min="1" max="12" class="mt-1 w-32" />
+        <div class="space-y-1">
+            <x-input-label for="mes" value="Mes" class="text-xs" />
+            <input id="mes" wire:model.live="mes" type="number" min="1" max="12" class="h-10 w-32 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
         </div>
         <div class="ml-auto text-right">
             <div class="text-sm text-muted-foreground">Total Neto General</div>
