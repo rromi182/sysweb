@@ -4,6 +4,7 @@ namespace App\Livewire\Nominas;
 
 use Livewire\Component;
 use App\Models\Empleado;
+use App\Models\Empresa;
 use App\Models\MovimientoNomina;
 use App\Enums\TipoMovimientoEnum;
 use App\DTOs\MovimientoNominaDTO;
@@ -12,7 +13,10 @@ use Illuminate\Support\Facades\Auth;
 
 class NominaForm extends Component
 {
+    public $empleados = [];
     public $empleado_id = '';
+    public $buscarEmpleado = '';
+    public $mostrarDropdown = false;
     public $fecha;
     public $tipo_movimiento = 'sueldo';
     public $monto = 0;
@@ -29,6 +33,8 @@ class NominaForm extends Component
         $this->anio = now()->year;
         $this->mes = now()->month;
         $this->fecha = now()->format('Y-m-d');
+        $this->empleados = Empleado::with('persona')->get();
+        $this->cargarEmpleados();
     }
 
     public function updatedTipoMovimiento($value)
@@ -37,7 +43,7 @@ class NominaForm extends Component
             $this->monto = 500000;
         }
         if ($value === 'sueldo') {
-            $this->monto = 0; 
+            $this->monto = 0;
         }
     }
 
@@ -81,6 +87,34 @@ class NominaForm extends Component
             return;
         }
 
+        $user = Auth::user();
+
+        // 👇 OBTENER EMPRESA DE FORMA SEGURA
+        $empresaId = null;
+
+        // Verificar si el usuario tiene empresas asignadas
+        if (method_exists($user, 'empresas') && $user->empresas()->exists()) {
+            $empresaId = $user->empresas()->first()->id;
+        }
+
+        // Si no tiene empresas, intentar obtener del empleado seleccionado
+        if (!$empresaId && $this->empleado_id) {
+            $empleado = Empleado::with('empresa')->find($this->empleado_id);
+            if ($empleado && $empleado->empresa_id) {
+                $empresaId = $empleado->empresa_id;
+            }
+        }
+
+        // Si aún no hay empresa, usar la primera empresa de la BD (solo para desarrollo)
+        if (!$empresaId) {
+            $empresaId = Empresa::first()->id ?? null;
+        }
+
+        if (!$empresaId) {
+            session()->flash('error', 'No se pudo determinar la empresa. Asigne una empresa al usuario o empleado.');
+            return;
+        }
+
         $dto = MovimientoNominaDTO::fromRequest(
             [
                 'empleado_id' => $this->empleado_id,
@@ -91,9 +125,11 @@ class NominaForm extends Component
                 'anio' => $this->anio,
                 'mes' => $this->mes,
             ],
-            Auth::user()->empresa_id, 
+            $empresaId,
             Auth::id()
         );
+
+
 
         if ($this->modoEdicion && $this->movimientoId) {
             $mov = MovimientoNomina::find($this->movimientoId);
@@ -110,17 +146,48 @@ class NominaForm extends Component
         session()->flash('message', $message);
     }
 
-    
+    public function cargarEmpleados()
+    {
+        $query = Empleado::with('persona')->where('estado', 'activo');
+
+        if (!empty($this->buscarEmpleado)) {
+            $query->whereHas('persona', function ($q) {
+                $q->where('nombres', 'LIKE', '%' . $this->buscarEmpleado . '%')
+                    ->orWhere('apellidos', 'LIKE', '%' . $this->buscarEmpleado . '%')
+                    ->orWhere('numero_documento', 'LIKE', '%' . $this->buscarEmpleado . '%');
+            });
+        }
+
+        $this->empleados = $query->limit(20)->get();
+        $this->mostrarDropdown = true;
+    }
+
+    public function updatedBuscarEmpleado()
+    {
+        $this->cargarEmpleados();
+    }
+
+    public function seleccionarEmpleado($id)
+    {
+        $empleado = Empleado::with('persona')->find($id);
+        if ($empleado) {
+            $this->empleado_id = $id;
+            $this->buscarEmpleado = $empleado->persona->nombres . ' ' . $empleado->persona->apellidos . ' (' . $empleado->persona->numero_documento . ')';
+            $this->mostrarDropdown = false;
+        }
+    }
+
+    public function ocultarDropdown()
+    {
+        $this->mostrarDropdown = false;
+    }
 
     public function render()
     {
-        $empresaId = Auth::check() ? Auth::user()->empresa_id : 0;
+        //$empresaId = Auth::check() ? Auth::user()->empresa_id : 0;
 
         return view('livewire.nominas.nomina-form', [
-            'empleados' => Empleado::with('persona')
-                ->where('estado', 'activo')
-                ->where('empresa_id', $empresaId)
-                ->get(),
+
             'tipos' => TipoMovimientoEnum::cases(),
         ]);
     }

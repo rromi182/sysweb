@@ -55,4 +55,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(Sale::class, 'created_by');
     }
+
+      public function empresas()
+    {
+        return $this->belongsToMany(
+            Empresa::class,           // Modelo relacionado
+            'user_empresas',          // Tabla intermedia
+            'user_id',                // FK del usuario en la tabla intermedia
+            'empresa_id'              // FK de la empresa en la tabla intermedia
+        )->withTimestamps();          // Si tienes created_at/updated_at en user_empresas
+    }
 }

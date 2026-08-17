@@ -25,6 +25,7 @@ final class NominaTable extends PowerGridComponent
 
     public int $anio;
     public int $mes;
+    public ?int $empresa_id = null;
 
     protected $listeners = [
         'refreshTable' => '$refresh',
@@ -36,6 +37,34 @@ final class NominaTable extends PowerGridComponent
     {
         $this->anio = now()->year;
         $this->mes = now()->month;
+
+        $this->cargarEmpresaPorDefecto();
+    }
+
+    private function cargarEmpresaPorDefecto(): void
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return;
+        }
+
+        $this->empresa_id = session('empresa_activa_id');
+
+        if (!$this->empresa_id) {
+            try {
+                if (method_exists($user, 'empresas')) {
+                    $empresa = $user->empresas()->first();
+                    if ($empresa) {
+                        $this->empresa_id = $empresa->id;
+                    }
+                }
+            } catch (\Exception $e) {
+                if (isset($user->empresa_id)) {
+                    $this->empresa_id = $user->empresa_id;
+                }
+            }
+        }
     }
 
     public function setUp(): array
@@ -49,8 +78,6 @@ final class NominaTable extends PowerGridComponent
                 ->csvSeparator(';')
                 ->csvDelimiter('"'),
 
-            PowerGrid::header(),
-
             PowerGrid::footer()
                 ->showPerPage(perPage: 10, perPageValues: [10, 25, 50, 100])
                 ->showRecordCount(),
@@ -59,22 +86,56 @@ final class NominaTable extends PowerGridComponent
 
     public function datasource(): Builder
     {
-        return MovimientoNomina::query()
-            ->with(['empleado.persona'])
-            ->where('empresa_id', Auth::user()->empresa_id)
+        $user = Auth::user();
+
+        if (!$user) {
+            return MovimientoNomina::query()->whereRaw('1 = 0');
+        }
+
+        $empresaIds = [];
+
+        try {
+            if (method_exists($user, 'empresas')) {
+                $empresaIds = $user->empresas()->pluck('empresas.id')->toArray();
+            }
+        } catch (\Exception $e) {
+            if (isset($user->empresa_id)) {
+                $empresaIds = [$user->empresa_id];
+            }
+        }
+
+        if (empty($empresaIds)) {
+            if ($this->empresa_id) {
+                $empresaIds = [$this->empresa_id];
+            } else {
+                return MovimientoNomina::query()->whereRaw('1 = 0');
+            }
+        }
+
+        $query = MovimientoNomina::query()
+            ->with(['empleado.persona', 'empleado.empresa'])
+            ->whereIn('empresa_id', $empresaIds)
             ->where('anio', $this->anio)
-            ->where('mes', $this->mes)
-            ->when($this->search, function ($query, $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('observacion', 'like', "%{$search}%")
-                        ->orWhereHas('empleado.persona', function ($sq) use ($search) {
-                            $sq->where('nombres', 'like', "%{$search}%")
-                                ->orWhere('apellidos', 'like', "%{$search}%")
-                                ->orWhere('numero_documento', 'like', "%{$search}%");
-                        });
-                });
-            })
-            ->orderBy($this->sortField, $this->sortDirection);
+            ->where('mes', $this->mes);
+
+        if ($this->empresa_id && in_array($this->empresa_id, $empresaIds)) {
+            $query->where('empresa_id', $this->empresa_id);
+        }
+
+        if (!empty($this->search)) {
+            $query->where(function ($q) {
+                $q->where('observacion', 'like', "%{$this->search}%")
+                    ->orWhereHas('empleado.persona', function ($sq) {
+                        $sq->where('nombres', 'like', "%{$this->search}%")
+                            ->orWhere('apellidos', 'like', "%{$this->search}%")
+                            ->orWhere('numero_documento', 'like', "%{$this->search}%");
+                    })
+                    ->orWhere('tipo_movimiento', 'like', "%{$this->search}%")
+                    ->orWhere('monto', 'like', "%{$this->search}%");
+            });
+        }
+
+        return $query->orderBy($this->sortField, $this->sortDirection);
     }
 
     public function fields(): PowerGridFields
@@ -82,16 +143,25 @@ final class NominaTable extends PowerGridComponent
         return PowerGrid::fields()
             ->add('id')
             ->add('fecha_formatted', fn(MovimientoNomina $model) => $model->fecha->format('d/m/Y'))
-            ->add('ci', fn(MovimientoNomina $model) => $model->empleado->persona->numero_documento ?? '-')
-            ->add('nombre_completo', fn(MovimientoNomina $model) => trim(($model->empleado->persona->nombres ?? '') . ' ' . ($model->empleado->persona->apellidos ?? '')))
+            ->add('ci', fn(MovimientoNomina $model) => $model->empleado?->persona?->numero_documento ?? '-')
+            ->add('nombre_completo', fn(MovimientoNomina $model) => trim(
+                ($model->empleado?->persona?->nombres ?? '') . ' ' .
+                    ($model->empleado?->persona?->apellidos ?? '')
+            ))
             ->add('anio')
             ->add('mes')
-            ->add('tipo_movimiento_label', fn(MovimientoNomina $model) => $model->tipo_movimiento->label())
+            ->add('tipo_movimiento_label', fn(MovimientoNomina $model) => $this->getTipoLabel($model->tipo_movimiento))
+            ->add('tipo_movimiento_badge', fn(MovimientoNomina $model) => $this->getTipoBadge($model->tipo_movimiento))
             ->add('monto_formatted', fn(MovimientoNomina $model) => number_format($model->monto, 0, ',', '.'))
+            ->add('monto_with_sign', fn(MovimientoNomina $model) => ($model->es_ingreso ? '+' : '-') . ' ' . number_format($model->monto, 0, ',', '.'))
             ->add('es_ingreso_badge', fn(MovimientoNomina $model) => $model->es_ingreso
                 ? '<span class="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">Ingreso</span>'
                 : '<span class="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800">Descuento</span>')
-            ->add('observacion', fn(MovimientoNomina $model) => $model->observacion ?? '-');
+            ->add('observacion', fn(MovimientoNomina $model) => $model->observacion ?? '-')
+            ->add('estado_badge', fn(MovimientoNomina $model) => $model->estado === 'activo'
+                ? '<span class="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">Activo</span>'
+                : '<span class="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800">Anulado</span>')
+            ->add('empresa_nombre', fn(MovimientoNomina $model) => $model->empresa?->nombre ?? '-');
     }
 
     public function columns(): array
@@ -102,27 +172,31 @@ final class NominaTable extends PowerGridComponent
                 ->visibleInExport(true),
 
             Column::make('FECHA', 'fecha_formatted')
-                ->sortable(),
+                ->sortable()
+                ->searchable(),
 
             Column::make('CI', 'ci')
+                ->sortable()
+                ->searchable(),
+
+            Column::make('EMPLEADO', 'nombre_completo')
+                ->sortable()
+                ->searchable(),
+
+            Column::make('EMPRESA', 'empresa_nombre')
+                ->sortable()
+                ->searchable(),
+
+            Column::make('TIPO', 'tipo_movimiento_badge')
                 ->sortable(),
 
-            Column::make('NOMBRE Y APELLIDO', 'nombre_completo')
-                ->sortable(),
-
-            Column::make('AÑO', 'anio')
-                ->sortable(),
-
-            Column::make('MES', 'mes')
-                ->sortable(),
-
-            Column::make('TIPO MOVIMIENTO', 'tipo_movimiento_label')
-                ->sortable(),
-
-            Column::make('MONTO', 'monto_formatted')
+            Column::make('MONTO', 'monto_with_sign')
                 ->sortable(),
 
             Column::make('NATURALEZA', 'es_ingreso_badge')
+                ->visibleInExport(false),
+
+            Column::make('ESTADO', 'estado_badge')
                 ->visibleInExport(false),
 
             Column::make('OBSERVACIÓN', 'observacion')
@@ -132,13 +206,48 @@ final class NominaTable extends PowerGridComponent
         ];
     }
 
+    private function getTipoLabel($tipo): string
+    {
+        $labels = [
+            'sueldo' => 'Sueldo',
+            'extra' => 'Extra',
+            'vale' => 'Vale',
+            'ausencia' => 'Ausencia',
+            'llegada_tardia' => 'Llegada Tardía',
+            'otros' => 'Otros',
+        ];
+
+        return $labels[$tipo] ?? $tipo;
+    }
+
+    private function getTipoBadge($tipo): string
+    {
+        $colors = [
+            'sueldo' => 'bg-blue-100 text-blue-800',
+            'extra' => 'bg-green-100 text-green-800',
+            'vale' => 'bg-yellow-100 text-yellow-800',
+            'ausencia' => 'bg-red-100 text-red-800',
+            'llegada_tardia' => 'bg-orange-100 text-orange-800',
+            'otros' => 'bg-gray-100 text-gray-800',
+        ];
+
+        $color = $colors[$tipo] ?? 'bg-gray-100 text-gray-800';
+        $label = $this->getTipoLabel($tipo);
+
+        return "<span class=\"inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {$color}\">{$label}</span>";
+    }
+
     public function actions($row): array
     {
+        if ($row->estado === 'anulado') {
+            return [];
+        }
+
         return [
             Button::add('editar')
                 ->slot('<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>')
                 ->class('inline-flex h-7 w-7 items-center justify-center rounded-md text-xs font-medium text-blue-600 transition-colors hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring')
-                ->dispatch('editarMovimientoForm', ['id' => $row->id])
+                ->dispatch('editarMovimiento', ['id' => $row->id])
                 ->tooltip('Editar movimiento'),
 
             Button::add('anular')
@@ -163,5 +272,11 @@ final class NominaTable extends PowerGridComponent
             \Illuminate\Support\Facades\Log::error('Error al anular movimiento: ' . $e->getMessage());
             $this->dispatch('toast', message: 'Error al anular: ' . $e->getMessage(), type: 'error');
         }
+    }
+
+    #[On('editarMovimiento')]
+    public function editarMovimiento(int $id): void
+    {
+        $this->dispatch('editarMovimientoForm', ['id' => $id]);
     }
 }

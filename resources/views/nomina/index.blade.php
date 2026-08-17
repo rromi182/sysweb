@@ -12,7 +12,7 @@
         </div>
 
         <div class="rounded-lg border bg-card text-card-foreground shadow-sm">
-            <livewire:nominas.test-table />
+            <livewire:nominas.nomina-table />
         </div>
     </div>
 

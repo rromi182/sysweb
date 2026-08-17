@@ -55,7 +55,8 @@ class Empleado extends Model
     // Relaciones
     public function persona(): BelongsTo
     {
-        return $this->belongsTo(Persona::class, 'persona_id');
+        //return $this->belongsTo(Persona::class, 'persona_id');
+        return $this->belongsTo(Persona::class);
     }
 
     public function user(): BelongsTo

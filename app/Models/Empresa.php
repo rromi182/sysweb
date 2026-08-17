@@ -69,6 +69,16 @@ class Empresa extends Model
         return $this->hasMany(Cargo::class);
     }
 
+      public function users()
+    {
+        return $this->belongsToMany(
+            User::class,              // Modelo relacionado
+            'user_empresas',          // Tabla intermedia
+            'empresa_id',             // FK de la empresa en la tabla intermedia
+            'user_id'                 // FK del usuario en la tabla intermedia
+        )->withTimestamps();
+    }
+
     // Scopes útiles
     public function scopeActivo($query)
     {
