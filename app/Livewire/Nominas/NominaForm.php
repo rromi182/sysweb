@@ -37,15 +37,33 @@ class NominaForm extends Component
         $this->cargarEmpleados();
     }
 
-    public function updatedTipoMovimiento($value)
+    // 🔥 NUEVO: Método genérico para detectar cambios en cualquier propiedad
+    public function updated($propertyName)
     {
-        if ($value === 'extra') {
-            $this->monto = 500000;
+        // Cuando cambia el tipo de movimiento
+        if ($propertyName === 'tipo_movimiento') {
+            if ($this->tipo_movimiento === 'extra') {
+                $this->monto = 500000;
+            } else {
+                $this->monto = 0;
+            }
         }
-        if ($value === 'sueldo') {
-            $this->monto = 0;
+
+        // Cuando cambia la búsqueda de empleado
+        if ($propertyName === 'buscarEmpleado') {
+            $this->cargarEmpleados();
         }
     }
+
+    // 🔥 MÉTODO ALTERNATIVO: Si prefieres nombres específicos
+    // public function updatingTipoMovimiento($value)
+    // {
+    //     if ($value === 'extra') {
+    //         $this->monto = 500000;
+    //     } else {
+    //         $this->monto = 0;
+    //     }
+    // }
 
     public function editarMovimiento($id)
     {
@@ -129,8 +147,6 @@ class NominaForm extends Component
             Auth::id()
         );
 
-
-
         if ($this->modoEdicion && $this->movimientoId) {
             $mov = MovimientoNomina::find($this->movimientoId);
             $mov->update($dto->toArray());
@@ -162,11 +178,6 @@ class NominaForm extends Component
         $this->mostrarDropdown = true;
     }
 
-    public function updatedBuscarEmpleado()
-    {
-        $this->cargarEmpleados();
-    }
-
     public function seleccionarEmpleado($id)
     {
         $empleado = Empleado::with('persona')->find($id);
@@ -184,10 +195,7 @@ class NominaForm extends Component
 
     public function render()
     {
-        //$empresaId = Auth::check() ? Auth::user()->empresa_id : 0;
-
         return view('livewire.nominas.nomina-form', [
-
             'tipos' => TipoMovimientoEnum::cases(),
         ]);
     }

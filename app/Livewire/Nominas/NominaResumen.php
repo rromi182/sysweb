@@ -1,4 +1,5 @@
 <?php
+// app/Livewire/Nominas/NominaResumen.php
 
 namespace App\Livewire\Nominas;
 
@@ -20,9 +21,19 @@ class NominaResumen extends Component
 
     public function getResumenProperty()
     {
+    
+        $empresaId = \DB::table('user_empresas')
+            ->where('user_id', Auth::id())
+            ->value('empresa_id');
+
+        // Si no tiene empresa asignada, retorna colección vacía
+        if (!$empresaId) {
+            return collect();
+        }
+
         return MovimientoNomina::activos()
             ->porPeriodo($this->anio, $this->mes)
-            ->where('empresa_id', Auth::user()->empresa_id)
+            ->where('empresa_id', $empresaId) // ← Usar la variable corregida
             ->with('empleado.persona')
             ->get()
             ->groupBy('empleado_id')
@@ -62,7 +73,7 @@ class NominaResumen extends Component
     }
 
     public function render()
-{
-    return view('livewire.nominas.nomina-resumen');
-}
+    {
+        return view('livewire.nominas.nomina-resumen');
+    }
 }

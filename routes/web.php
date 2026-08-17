@@ -6,6 +6,7 @@ use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FinanceReportController;
 use App\Http\Controllers\NominaController;
+use App\Livewire\Nominas\NominaTable;
 use App\Http\Controllers\EmpresaController;
 use App\Livewire\Empleados\EmpleadoTable;
 use App\Livewire\Dashboard\HrDashboard;
