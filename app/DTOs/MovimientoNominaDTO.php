@@ -24,12 +24,27 @@ readonly class MovimientoNominaDTO
     {
         $tipo = TipoMovimientoEnum::from($data['tipo_movimiento']);
 
+        // 🔥 CONVIERTE EL MONTO A FLOAT CON VALIDACIÓN
+        $monto = 0.0;
+        if (isset($data['monto'])) {
+            if (is_numeric($data['monto'])) {
+                $monto = (float) $data['monto'];
+            } else {
+                // Si es string, elimina cualquier caracter no numérico
+                $monto = (float) preg_replace('/[^0-9.]/', '', $data['monto']);
+            }
+        }
+
+        if ($monto < 0) {
+            $monto = 0;
+        }
+
         return new self(
             empleadoId: (int) $data['empleado_id'],
             empresaId: $empresaId,
             fecha: Carbon::parse($data['fecha']),
             tipo: $tipo,
-            monto: (float) $data['monto'],
+            monto: $monto,
             observacion: $data['observacion'] ?? null,
             anio: (int) $data['anio'],
             mes: (int) $data['mes'],
@@ -43,9 +58,9 @@ readonly class MovimientoNominaDTO
         return [
             'empleado_id' => $this->empleadoId,
             'empresa_id' => $this->empresaId,
-            'fecha' => $this->fecha,
+            'fecha' => $this->fecha->format('Y-m-d'),
             'tipo_movimiento' => $this->tipo->value,
-            'monto' => $this->monto,
+            'monto' => (float) $this->monto, // 🔥 CASTEO EXPLÍCITO
             'observacion' => $this->observacion,
             'anio' => $this->anio,
             'mes' => $this->mes,

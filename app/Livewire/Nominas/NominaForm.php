@@ -86,81 +86,95 @@ class NominaForm extends Component
         $this->fecha = now()->format('Y-m-d');
     }
 
-    public function save(NominaService $service)
-    {
-        $this->validate([
-            'empleado_id' => 'required|exists:empleados,id',
-            'fecha' => 'required|date',
-            'tipo_movimiento' => 'required',
-            'monto' => 'required|numeric|min:0',
-            'observacion' => 'required_if:tipo_movimiento,otros',
-            'anio' => 'required|integer',
-            'mes' => 'required|integer|min:1|max:12',
-        ], [
-            'observacion.required_if' => 'La observación es obligatoria para movimientos tipo OTROS.',
-        ]);
+public function save(NominaService $service)
+{
+    // 🔥 CONVIERTE EL MONTO EXPLÍCITAMENTE ANTES DE VALIDAR
+    $this->monto = (float) $this->monto;
 
-        if (!Auth::check()) {
-            session()->flash('error', 'Usuario no autenticado');
-            return;
-        }
+    $this->validate([
+        'empleado_id' => 'required|exists:empleados,id',
+        'fecha' => 'required|date',
+        'tipo_movimiento' => 'required',
+        'monto' => 'required|numeric|min:0',
+        'observacion' => 'required_if:tipo_movimiento,otros',
+        'anio' => 'required|integer',
+        'mes' => 'required|integer|min:1|max:12',
+    ], [
+        'observacion.required_if' => 'La observación es obligatoria para movimientos tipo OTROS.',
+    ]);
 
-        $user = Auth::user();
-
-        // 👇 OBTENER EMPRESA DE FORMA SEGURA
-        $empresaId = null;
-
-        // Verificar si el usuario tiene empresas asignadas
-        if (method_exists($user, 'empresas') && $user->empresas()->exists()) {
-            $empresaId = $user->empresas()->first()->id;
-        }
-
-        // Si no tiene empresas, intentar obtener del empleado seleccionado
-        if (!$empresaId && $this->empleado_id) {
-            $empleado = Empleado::with('empresa')->find($this->empleado_id);
-            if ($empleado && $empleado->empresa_id) {
-                $empresaId = $empleado->empresa_id;
-            }
-        }
-
-        // Si aún no hay empresa, usar la primera empresa de la BD (solo para desarrollo)
-        if (!$empresaId) {
-            $empresaId = Empresa::first()->id ?? null;
-        }
-
-        if (!$empresaId) {
-            session()->flash('error', 'No se pudo determinar la empresa. Asigne una empresa al usuario o empleado.');
-            return;
-        }
-
-        $dto = MovimientoNominaDTO::fromRequest(
-            [
-                'empleado_id' => $this->empleado_id,
-                'fecha' => $this->fecha,
-                'tipo_movimiento' => $this->tipo_movimiento,
-                'monto' => $this->monto,
-                'observacion' => $this->observacion,
-                'anio' => $this->anio,
-                'mes' => $this->mes,
-            ],
-            $empresaId,
-            Auth::id()
-        );
-
-        if ($this->modoEdicion && $this->movimientoId) {
-            $mov = MovimientoNomina::find($this->movimientoId);
-            $mov->update($dto->toArray());
-            $message = 'Movimiento actualizado correctamente';
-        } else {
-            $service->registrarMovimiento($dto);
-            $message = 'Movimiento registrado correctamente';
-        }
-
-        $this->dispatch('movimientoGuardado');
-        $this->resetForm();
-
-        session()->flash('message', $message);
+    if (!Auth::check()) {
+        session()->flash('error', 'Usuario no autenticado');
+        return;
     }
+
+    $user = Auth::user();
+
+    // 👇 OBTENER EMPRESA DE FORMA SEGURA
+    $empresaId = null;
+
+    if (method_exists($user, 'empresas') && $user->empresas()->exists()) {
+        $empresaId = $user->empresas()->first()->id;
+    }
+
+    if (!$empresaId && $this->empleado_id) {
+        $empleado = Empleado::with('empresa')->find($this->empleado_id);
+        if ($empleado && $empleado->empresa_id) {
+            $empresaId = $empleado->empresa_id;
+        }
+    }
+
+    if (!$empresaId) {
+        $empresaId = Empresa::first()->id ?? null;
+    }
+
+    if (!$empresaId) {
+        session()->flash('error', 'No se pudo determinar la empresa.');
+        return;
+    }
+
+    // 🔥 DEPURACIÓN EXTREMA
+    \Log::info('========== VALOR DEL MONTO ==========');
+    \Log::info('monto_raw: ' . $this->monto);
+    \Log::info('monto_tipo: ' . gettype($this->monto));
+    \Log::info('monto_cast: ' . (float) $this->monto);
+    \Log::info('=====================================');
+
+    $dto = MovimientoNominaDTO::fromRequest(
+        [
+            'empleado_id' => $this->empleado_id,
+            'fecha' => $this->fecha,
+            'tipo_movimiento' => $this->tipo_movimiento,
+            'monto' => (float) $this->monto,
+            'observacion' => $this->observacion,
+            'anio' => $this->anio,
+            'mes' => $this->mes,
+        ],
+        $empresaId,
+        Auth::id()
+    );
+
+    // 🔥 DEPURACIÓN DEL DTO
+    \Log::info('========== DTO CREADO ==========');
+    \Log::info('DTO monto: ' . $dto->monto);
+    \Log::info('DTO monto tipo: ' . gettype($dto->monto));
+    \Log::info('DTO array: ' . json_encode($dto->toArray()));
+    \Log::info('================================');
+
+    if ($this->modoEdicion && $this->movimientoId) {
+        $mov = MovimientoNomina::find($this->movimientoId);
+        $mov->update($dto->toArray());
+        $message = 'Movimiento actualizado correctamente';
+    } else {
+        $service->registrarMovimiento($dto);
+        $message = 'Movimiento registrado correctamente';
+    }
+
+    $this->dispatch('movimientoGuardado');
+    $this->resetForm();
+
+    session()->flash('message', $message);
+}
 
     public function cargarEmpleados()
     {
