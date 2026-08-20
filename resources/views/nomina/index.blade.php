@@ -14,7 +14,7 @@
 
             <x-primary-button
                 x-data
-                x-on:click="$dispatch('open-modal', { name: 'nomina-form-modal' })"
+                x-on:click="$dispatch('crear-movimiento')"
             >
                 <x-heroicon-o-plus class="w-4 h-4 mr-2" />
                 {{ __('Nuevo Movimiento') }}

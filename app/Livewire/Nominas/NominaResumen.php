@@ -74,7 +74,7 @@ class NominaResumen extends Component
         return $this->resumen->sum('total_neto');
     }
 
-    // 🔥 EXPORTAR A EXCEL
+    //EXPORTAR A EXCEL
     public function exportarExcel()
     {
         $resumen = $this->resumen;
@@ -234,7 +234,7 @@ class NominaResumen extends Component
 
     public function render()
     {
-        // 🔥 PASAR AMBAS VARIABLES EXPLÍCITAMENTE
+        //PASAR AMBAS VARIABLES EXPLÍCITAMENTE
         return view('livewire.nominas.nomina-resumen', [
             'resumen' => $this->resumen,
             'totalGeneral' => $this->totalGeneral,
