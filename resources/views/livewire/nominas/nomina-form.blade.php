@@ -92,7 +92,7 @@
                     {{-- Monto --}}
                     <div class="space-y-1">
                         <x-input-label for="monto" value="Monto (Gs.)" class="text-xs" />
-                        <input id="monto" wire:model.live="monto" type="number" min="0" step="1" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="Ej: 200000">
+                        <input id="monto" wire:model.live="monto" type="number"  min="0" step="1" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="Ej: 200000">
                         <x-input-error :messages="$errors->get('monto')" class="text-[10px]" />
                     </div>
 

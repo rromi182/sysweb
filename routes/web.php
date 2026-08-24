@@ -58,6 +58,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/liquidar', [NominaController::class, 'liquidar'])->name('liquidar');
         Route::get('/subsidios', [NominaController::class, 'calcularSubsidios'])->name('subsidios');
         Route::get('/aportes-patronales', [NominaController::class, 'aportesPatronales'])->name('aportes-patronales');
+        // routes/web.php
+        Route::get('/nomina/recibo/{empleadoId}/{anio}/{mes}',[NominaController::class, 'generarRecibo'])->name('nomina.recibo');
     });
 
 

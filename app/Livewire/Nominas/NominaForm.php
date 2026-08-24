@@ -20,7 +20,7 @@ class NominaForm extends Component
     public $mostrarDropdown = false;
     public $fecha;
     public $tipo_movimiento = 'sueldo';
-    public $monto = 0;
+    public $monto = 3044000;
     public $observacion = '';
     public $anio;
     public $mes;
@@ -53,7 +53,11 @@ class NominaForm extends Component
                 $this->monto = 500000;
             } elseif ($this->tipo_movimiento === 'sueldo') {
                 $this->monto = 3044000;
-            } else {
+            } else if ($this->tipo_movimiento === 'vale')  {
+                $this->monto = 100000;
+            } else if ($this->tipo_movimiento === 'ausencia')  {
+                $this->monto = 117000;
+            }else {
                 $this->monto = 0;
             }
         }
@@ -70,7 +74,7 @@ class NominaForm extends Component
         $this->empleado_id = $mov->empleado_id;
         $this->fecha = $mov->fecha->format('Y-m-d');
         $this->tipo_movimiento = $mov->tipo_movimiento->value;
-        $this->monto = $mov->monto;
+        $this->monto = (int) $mov->monto; 
         $this->observacion = $mov->observacion ?? '';
         $this->anio = $mov->anio;
         $this->mes = $mov->mes;
@@ -95,7 +99,7 @@ class NominaForm extends Component
 
     public function save(NominaService $service)
     {
-        $this->monto = (float) $this->monto;
+        $this->monto = $this->monto;
 
         $this->validate([
             'empleado_id' => 'required|exists:empleados,id',
@@ -143,7 +147,7 @@ class NominaForm extends Component
                 'empleado_id' => $this->empleado_id,
                 'fecha' => $this->fecha,
                 'tipo_movimiento' => $this->tipo_movimiento,
-                'monto' => (float) $this->monto,
+                'monto' => $this->monto,
                 'observacion' => $this->observacion,
                 'anio' => $this->anio,
                 'mes' => $this->mes,

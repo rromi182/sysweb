@@ -5,9 +5,16 @@ namespace App\Http\Controllers;
 use App\Services\NominaService;
 use App\Http\Requests\NominaMovimientoRequest;
 use App\Exceptions\NominaException;
+use App\DTOs\MovimientoNominaDTO;
+use App\Models\Empleado;
+use App\Models\MovimientoNomina;
+use App\Models\ParametroIPS;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;  
-use Illuminate\Support\Facades\Log;   
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
+
 
 class NominaController extends Controller
 {
@@ -51,7 +58,6 @@ class NominaController extends Controller
                 'message' => 'Movimiento registrado correctamente',
                 'data' => $movimiento,
             ], 201);
-
         } catch (NominaException $e) {
             return response()->json([
                 'success' => false,
@@ -89,7 +95,6 @@ class NominaController extends Controller
                 'message' => 'Liquidación calculada correctamente',
                 'data' => $liquidacion,
             ]);
-
         } catch (NominaException $e) {
             return response()->json([
                 'success' => false,
@@ -162,5 +167,57 @@ class NominaController extends Controller
                 'message' => 'Error al calcular aportes patronales',
             ], 500);
         }
+    }
+
+    public function generarRecibo($empleadoId, $anio, $mes)
+    {
+        $empleado = Empleado::with(['persona', 'empresa', 'cargo'])->findOrFail($empleadoId);
+
+        $movimientos = MovimientoNomina::where('empleado_id', $empleadoId)
+            ->where('anio', $anio)->where('mes', $mes)
+            ->where('estado', 'activo')->get();
+
+        $salarioBase = $empleado->salario_base;
+        $horasExtras = $movimientos->where('tipo_movimiento', 'extra')->sum('monto');
+        $totalSalario = $salarioBase + $horasExtras;
+
+        $parametrosIps = ParametroIPS::where('empresa_id', $empleado->empresa_id)
+            ->where('anio', $anio)->where('mes', $mes)->first();
+        $porcentajeIps = $parametrosIps?->aporte_empleado ?? 9; // 9% default PY
+        $descuentoIps = round($totalSalario * $porcentajeIps / 100);
+
+        $adelantos = $movimientos->where('tipo_movimiento', 'vale')->sum('monto');
+        $llegadasTardias = $movimientos->where('tipo_movimiento', 'llegada_tardia')->sum('monto');
+        $otros = $movimientos->where('tipo_movimiento', 'otros')->where('es_ingreso', 0)->sum('monto');
+
+        $totalDescuentos = $descuentoIps + $adelantos + $llegadasTardias + $otros;
+        $saldoCobrar = $totalSalario - $totalDescuentos;
+
+        // Días trabajados desde asistencias
+        $diasTrabajados = \DB::table('asistencias')
+            ->where('empleado_id', $empleadoId)
+            ->whereYear('fecha_laboral', $anio)->whereMonth('fecha_laboral', $mes)
+            ->where('estado', 'presente')->count();
+
+        $data = compact(
+            'empleado',
+            'movimientos',
+            'salarioBase',
+            'horasExtras',
+            'totalSalario',
+            'descuentoIps',
+            'adelantos',
+            'llegadasTardias',
+            'otros',
+            'totalDescuentos',
+            'saldoCobrar',
+            'diasTrabajados',
+            'anio',
+            'mes'
+        );
+
+        // Para PDF instalar: composer require barryvdh/laravel-dompdf
+       $pdf = Pdf::loadView('nomina.recibo', $data);
+        return $pdf->stream("recibo_{$empleadoId}_{$anio}_{$mes}.pdf");
     }
 }
